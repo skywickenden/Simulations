@@ -1,0 +1,15 @@
+#canvas {
+  border: solid 1px #aaa;
+}
+
+.canvasContainer {
+  position: relative;
+}
+
+.canvasHover {
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  padding: 10px;
+}

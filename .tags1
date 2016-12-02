@@ -1,0 +1,30 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+peakResources.food	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^    food: 0,$/;"	property	line:11
+peakResources.clothing	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^    clothing: 0,$/;"	property	line:12
+peakResources.shelter	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^    shelter: 0,$/;"	property	line:13
+constructor	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  constructor(populationRoot, clockSpeed) {$/;"	function	line:22
+tickTock	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  tickTock() {$/;"	function	line:30
+trade	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  trade(tradeType) {$/;"	function	line:42
+tradeWithPartners	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  tradeWithPartners(person, tradeType) {$/;"	function	line:61
+tradeWithPartners1	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  tradeWithPartners1(person, partnerTop, partnerBottom, partnerLeft, partnerRight) {$/;"	function	line:116
+tradeFood1	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  tradeFood1(person, partner) {$/;"	function	line:133
+tradeClothes1	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  tradeClothes1(person, partner) {$/;"	function	line:148
+tradeShelter1	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  tradeShelter1(person, partner) {$/;"	function	line:163
+shareWithPartners	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  shareWithPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight) {$/;"	function	line:178
+shareFood	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  shareFood(person, partner) {$/;"	function	line:195
+shareClothes	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  shareClothes(person, partner) {$/;"	function	line:221
+shareShelter	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  shareShelter(person, partner) {$/;"	function	line:247
+calculateResourceStatus	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  calculateResourceStatus(person) {$/;"	function	line:273
+harvest	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  harvest() {$/;"	function	line:295
+consume	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  consume() {$/;"	function	line:310
+peakResources.food	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^      food: this.peakResources.food -= this.consumptionPerTurn,$/;"	property	line:331
+setHighestResource	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  setHighestResource(food, clothing, shelter) {$/;"	function	line:337
+generatePersonsStartingResources	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  generatePersonsStartingResources() {$/;"	function	line:343
+generatePerTurnResources	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  generatePerTurnResources() {$/;"	function	line:358
+switch	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^    switch(primaryOrder) {$/;"	function	line:377
+populate	C:\Users\Sky\Documents\WebSites\tmp\create-react-app\simulations\src\App\CoincidenceOfWants\Population.js	/^  populate() {$/;"	function	line:406
