@@ -15,7 +15,7 @@ export default class Population {
   resourcesPerTurn = 15;
   consumptionPerTurn = 2;
   shareAmount = 2;
-  highStock = 20;
+  highStock = 100;
   lowStock = 20;
   itteration = 0;
 
@@ -31,7 +31,8 @@ export default class Population {
     setTimeout(() => {
       this.harvest();
       // this.trade('share');
-      this.trade('trade1');
+      this.trade('buy');
+      this.trade('sell');
       this.consume();
 
       this.itteration++;
@@ -59,6 +60,10 @@ export default class Population {
   }
 
   tradeWithPartners(person, tradeType) {
+    if (person.alive === false) {
+      return;
+    }
+
     let topIndex = person.index - 1;
     const populationRoot = this.populationRoot;
     const populationCount = this.populationCount;
@@ -106,33 +111,67 @@ export default class Population {
 
     if (tradeType === 'share') {
       this.shareWithPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight);
-    } else if (tradeType === 'trade1') {
-      this.tradeWithPartners1(person, partnerTop, partnerBottom, partnerLeft, partnerRight);
-    } else if (tradeType === 'trade2') {
-      this.tradeWithPartners1(person, partnerTop, partnerBottom, partnerLeft, partnerRight);
+    } else if (tradeType === 'buy') {
+      this.buyFromPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight);
+    } else if (tradeType === 'sell') {
+      this.sellToPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight);
     }
   }
 
-  tradeWithPartners1(person, partnerTop, partnerBottom, partnerLeft, partnerRight) {
-    this.tradeFood1(person, partnerTop);
-    this.tradeFood1(person, partnerBottom);
-    this.tradeFood1(person, partnerLeft);
-    this.tradeFood1(person, partnerRight);
+  sellToPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight) {
+    this.sellFood(person, partnerTop);
+    this.sellFood(person, partnerBottom);
+    this.sellFood(person, partnerLeft);
+    this.sellFood(person, partnerRight);
 
-    this.tradeClothes1(person, partnerTop);
-    this.tradeClothes1(person, partnerBottom);
-    this.tradeClothes1(person, partnerLeft);
-    this.tradeClothes1(person, partnerRight);
+    this.sellClothes(person, partnerTop);
+    this.sellClothes(person, partnerBottom);
+    this.sellClothes(person, partnerLeft);
+    this.sellClothes(person, partnerRight);
 
-    this.tradeShelter1(person, partnerTop);
-    this.tradeShelter1(person, partnerBottom);
-    this.tradeShelter1(person, partnerLeft);
-    this.tradeShelter1(person, partnerRight);
+    this.sellShelter(person, partnerTop);
+    this.sellShelter(person, partnerBottom);
+    this.sellShelter(person, partnerLeft);
+    this.sellShelter(person, partnerRight);
   }
 
-  tradeFood1(person, partner) {
+  buyFromPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight) {
+    this.buyFood(person, partnerTop);
+    this.buyFood(person, partnerBottom);
+    this.buyFood(person, partnerLeft);
+    this.buyFood(person, partnerRight);
+
+    this.buyClothes(person, partnerTop);
+    this.buyClothes(person, partnerBottom);
+    this.buyClothes(person, partnerLeft);
+    this.buyClothes(person, partnerRight);
+
+    this.buyShelter(person, partnerTop);
+    this.buyShelter(person, partnerBottom);
+    this.buyShelter(person, partnerLeft);
+    this.buyShelter(person, partnerRight);
+  }
+
+  sellFood(person, partner) {
+    if(partner.alive ===false) return;
+    if (person.resources.food >= this.highStock) {
+      if (partner.resources.food < this.highStock) {
+        if (partner.resources.money >= this.highStock) {
+          person.resources.food -= this.shareAmount;
+          partner.resources.food += this.shareAmount;
+          person.resources.money += this.shareAmount;
+          partner.resources.money -= this.shareAmount;
+          person.trader = true;
+          partner.tradee = true;
+        }
+      }
+    }
+  }
+
+  buyFood(person, partner) {
+    if(partner.alive ===false) return;
     if (person.resources.food <= this.highStock) {
-      if (partner.resources.food >= this.lowStock) {
+      // if (partner.resources.food >= this.lowStock) {
         if (person.resources.money >= this.lowStock) {
           person.resources.food += this.shareAmount;
           partner.resources.food -= this.shareAmount;
@@ -141,13 +180,30 @@ export default class Population {
           person.trader = true;
           partner.tradee = true;
         }
+      // }
+    }
+  }
+
+  sellClothes(person, partner) {
+    if(partner.alive ===false) return;
+    if (person.resources.clothes >= this.highStock) {
+      if (partner.resources.clothes < this.highStock) {
+        if (partner.resources.money >= this.highStock) {
+          person.resources.clothes -= this.shareAmount;
+          partner.resources.clothes += this.shareAmount;
+          person.resources.money += this.shareAmount;
+          partner.resources.money -= this.shareAmount;
+          person.trader = true;
+          partner.tradee = true;
+        }
       }
     }
   }
 
-  tradeClothes1(person, partner) {
+  buyClothes(person, partner) {
+    if(partner.alive ===false) return;
     if (person.resources.clothes <= this.highStock) {
-      if (partner.resources.clothes >= this.lowStock) {
+      // if (partner.resources.clothes >= this.lowStock) {
         if (person.resources.money >= this.lowStock) {
           person.resources.clothes += this.shareAmount;
           partner.resources.clothes -= this.shareAmount;
@@ -156,18 +212,35 @@ export default class Population {
           person.trader = true;
           partner.tradee = true;
         }
-      }
+      // }
     }
   }
 
-  tradeShelter1(person, partner) {
+  sellShelter(person, partner) {
+    if(partner.alive ===false) return;
+    if (person.resources.shelter >= this.highStock) {
+      // if (partner.resources.shelter <= this.highStock) {
+        if (partner.resources.money >= this.highStock) {
+          person.resources.shelter -= this.shareAmount;
+          partner.resources.shelter += this.shareAmount;
+          person.resources.money += this.shareAmount;
+          partner.resources.money -= this.shareAmount;
+          person.trader = true;
+          partner.tradee = true;
+        }
+      // }
+    }
+  }
+
+  buyShelter(person, partner) {
+    if(partner.alive ===false) return;
     if (person.resources.shelter <= this.highStock) {
       if (partner.resources.shelter >= this.lowStock) {
         if (person.resources.money >= this.lowStock) {
           person.resources.shelter += this.shareAmount;
           partner.resources.shelter -= this.shareAmount;
           person.resources.money -= this.shareAmount;
-          partner.resources.money += this.shareAmount;
+          partner.resources.money += (this.shareAmount * 11);
           person.trader = true;
           partner.tradee = true;
         }
@@ -193,6 +266,7 @@ export default class Population {
   }
 
   shareFood(person, partner) {
+    if(partner.alive ===false) return;
     if (person.resources.food <= this.lowStock) {
       if (partner.resources.food >= this.highStock) {
         if (person.resources.shelter >= this.highStock) {
@@ -219,6 +293,7 @@ export default class Population {
   }
 
   shareClothes(person, partner) {
+    if(partner.alive ===false) return;
     if (person.resources.clothes <= this.lowStock) {
       if (partner.resources.clothes >= this.highStock) {
         if (person.resources.shelter >= this.highStock) {
@@ -245,6 +320,7 @@ export default class Population {
   }
 
   shareShelter(person, partner) {
+    if(partner.alive ===false) return;
     if (person.resources.shelter <= this.lowStock) {
       if (partner.resources.shelter >= this.highStock) {
         if (person.resources.food >= this.highStock) {
@@ -341,7 +417,7 @@ export default class Population {
   }
 
   generatePersonsStartingResources() {
-    const startingGuassian = gaussian(30, 100);
+    const startingGuassian = gaussian(60, 10);
     const food = parseInt(startingGuassian(), 10);
     const clothing = parseInt(startingGuassian(), 10);
     const shelter = parseInt(startingGuassian(), 10);
