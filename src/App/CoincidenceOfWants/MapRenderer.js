@@ -55,12 +55,19 @@ export default class MapRenderer {
 
   setHoverContents(person) {
     if (person) {
-      this.hoverContents = `index ${person.index} | money ${person.resources.money} | food ${person.resources.food} | clothing ${person.resources.clothing} | shelter ${person.resources.shelter}`;
+      let tradingWith = '';
+      person.tradedWith.forEach((partner) => {
+        tradingWith += partner.name + ' ';
+      });
+      this.hoverContents = `index ${person.index} | tradingWith ${tradingWith} | money ${person.resources.money} | food ${person.resources.food} | clothing ${person.resources.clothing} | shelter ${person.resources.shelter}`;
       this.setParentHoverContent(this.hoverContents);
     }
   }
 
   render() {
+    this.context.beginPath();
+    this.context.fillStyle = `rgb(255, 255, 255)`;
+    this.context.fillRect(0, 0, this.width, this.height);    
     for (let countX = 0; countX < this.Population.populationRoot; countX++) {
       for (let countY = 0; countY < this.Population.populationRoot; countY++) {
         const personId = this.calculatePersonId(countX, countY);
@@ -89,29 +96,18 @@ export default class MapRenderer {
           this.cellHeight - 1
         );
 
-        const quaterWidth = this.cellWidth / 4;
-        const quaterHeight = this.cellHeight / 4;
         const halfWidth = this.cellWidth / 2;
         const halfHeight = this.cellHeight / 2;
-        if (person.trader && person.alive === true) {
-          this.context.fillStyle = `rgb(255, 255, 255)`;
-          this.context.fillRect(
-            cellLeftTopX + quaterWidth,
-            cellLeftTopY + quaterHeight,
-            halfWidth,
-            halfHeight
+
+        person.tradedWith.forEach((partner) => {
+          this.context.moveTo(cellLeftTopX + halfWidth - 2, cellLeftTopY + halfHeight - 2);
+          this.context.lineTo(
+            partner.countX * this.cellWidth + halfWidth + 2,
+            partner.countY * this.cellHeight + halfHeight + 2
           );
-        }
-        if (person.tradee && person.alive === true) {
-          this.context.fillStyle = `rgb(0, 0, 0)`;
-          this.context.fillRect(
-            cellLeftTopX + quaterWidth,
-            cellLeftTopY + quaterHeight,
-            halfWidth,
-            halfHeight
-          );
-        }
+        });
       }
     }
+    this.context.stroke();
   }
 }

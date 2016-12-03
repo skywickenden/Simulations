@@ -32,7 +32,7 @@ export default class Population {
       this.harvest();
       // this.trade('share');
       this.trade('buy');
-      // this.trade('sell');
+      this.trade('sell');
       this.consume();
 
       this.itteration++;
@@ -44,9 +44,7 @@ export default class Population {
     const tradeList = [];
     this.people.forEach((person) => {
       if (person.alive === false) return;
-
-      person.trader = false;
-      person.tradee = false;
+      person.tradedWith = [];
       this.calculateResourceStatus(person);
       tradeList.push(person)
     });
@@ -161,8 +159,7 @@ export default class Population {
           partner.resources.food += this.shareAmount;
           person.resources.money += this.shareAmount;
           partner.resources.money -= this.shareAmount;
-          person.trader = true;
-          partner.tradee = true;
+          person.tradedWith.push(partner);
         }
       }
     }
@@ -177,8 +174,7 @@ export default class Population {
           partner.resources.food -= this.shareAmount;
           person.resources.money -= this.shareAmount;
           partner.resources.money += this.shareAmount;
-          person.trader = true;
-          partner.tradee = true;
+          person.tradedWith.push(partner);
         }
       }
     }
@@ -193,8 +189,7 @@ export default class Population {
           partner.resources.clothes += this.shareAmount;
           person.resources.money += this.shareAmount;
           partner.resources.money -= this.shareAmount;
-          person.trader = true;
-          partner.tradee = true;
+          person.tradedWith.push(partner);
         }
       }
     }
@@ -209,8 +204,7 @@ export default class Population {
           partner.resources.clothes -= this.shareAmount;
           person.resources.money -= this.shareAmount;
           partner.resources.money += this.shareAmount;
-          person.trader = true;
-          partner.tradee = true;
+          person.tradedWith.push(partner);
         }
       }
     }
@@ -225,8 +219,7 @@ export default class Population {
           partner.resources.shelter += this.shareAmount;
           person.resources.money += this.shareAmount;
           partner.resources.money -= this.shareAmount;
-          person.trader = true;
-          partner.tradee = true;
+          person.tradedWith.push(partner);
         }
       }
     }
@@ -240,9 +233,8 @@ export default class Population {
           person.resources.shelter += this.shareAmount;
           partner.resources.shelter -= this.shareAmount;
           person.resources.money -= this.shareAmount;
-          partner.resources.money += (this.shareAmount * 11);
-          person.trader = true;
-          partner.tradee = true;
+          partner.resources.money += (this.shareAmount);
+          person.tradedWith.push(partner);
         }
       }
     }
@@ -275,8 +267,7 @@ export default class Population {
             partner.resources.food -= this.shareAmount;
             person.resources.shelter -= this.shareAmount;
             partner.resources.shelter += this.shareAmount;
-            person.trader = true;
-            partner.tradee = true;
+            person.tradedWith.push(partner);
           }
         } else if (person.resources.clothes >= this.highStock) {
           if (partner.resources.clothes <= this.lowStock) {
@@ -284,8 +275,7 @@ export default class Population {
             partner.resources.food -= this.shareAmount;
             person.resources.clothes -= this.shareAmount;
             partner.resources.clothes += this.shareAmount;
-            person.trader = true;
-            partner.tradee = true;
+            person.tradedWith.push(partner);
           }
         }
       }
@@ -302,8 +292,7 @@ export default class Population {
             partner.resources.clothes -= this.shareAmount;
             person.resources.shelter -= this.shareAmount;
             partner.resources.shelter += this.shareAmount;
-            person.trader = true;
-            partner.tradee = true;
+            person.tradedWith.push(partner);
           }
         } else if (person.resources.food >= this.highStock) {
           if (partner.resources.food <= this.lowStock) {
@@ -311,8 +300,7 @@ export default class Population {
             partner.resources.clothes -= this.shareAmount;
             person.resources.food -= this.shareAmount;
             partner.resources.food += this.shareAmount;
-            person.trader = true;
-            partner.tradee = true;
+            person.tradedWith.push(partner);
           }
         }
       }
@@ -329,8 +317,7 @@ export default class Population {
             partner.resources.shelter -= this.shareAmount;
             person.resources.food -= this.shareAmount;
             partner.resources.food += this.shareAmount;
-            person.trader = true;
-            partner.tradee = true;
+            person.tradedWith.push(partner);
           }
         } else if (person.resources.clothes >= this.highStock) {
           if (partner.resources.clothes <= this.lowStock) {
@@ -338,8 +325,7 @@ export default class Population {
             partner.resources.shelter -= this.shareAmount;
             person.resources.clothes -= this.shareAmount;
             partner.resources.clothes += this.shareAmount;
-            person.trader = true;
-            partner.tradee = true;
+            person.tradedWith.push(partner);
           }
         }
       }
@@ -398,8 +384,7 @@ export default class Population {
       // If any resource runs out, then person dies.
       if (resources.food === 0 || resources.clothing === 0 || resources.shelter === 0) {
         person.alive = false;
-        person.trader = false;
-        person.tradee = false;
+        person.tradedWith = [];
       }
     });
 
@@ -421,7 +406,7 @@ export default class Population {
     const food = parseInt(startingGuassian(), 10);
     const clothing = parseInt(startingGuassian(), 10);
     const shelter = parseInt(startingGuassian(), 10);
-    const money = parseInt(startingGuassian(), 10);
+    const money = 200; // parseInt(startingGuassian(), 10);
     this.setHighestResource(food, clothing, shelter);
     return {
       food,

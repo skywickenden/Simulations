@@ -15,7 +15,7 @@ export default class CoincidenceOfWants extends Component {
   Renderer = null;
   canvasId = 'canvas';
   Population = null;
-  clockSpeed = 100;
+  clockSpeed = 500;
 
   componentDidMount() {
     const populationRoot = 31;
