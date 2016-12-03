@@ -89,6 +89,15 @@ export default class CoincidenceOfWants extends Component {
             />
         </div>
 
+        <p>
+          First show no trading.
+          First show coincidence of wants.
+          Next show trading with fixed money supply. Initially there is much more sharing going on.
+          But it slows down and dies off. Why
+          ... tried selling excess stock as well as buying when needed. no joy. it still dies off
+          ... next make money a resource that is harvested to make up for the concentration of wealth.
+        </p>
+
       </div>
     );
   }
