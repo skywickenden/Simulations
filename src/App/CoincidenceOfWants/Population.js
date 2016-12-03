@@ -32,7 +32,7 @@ export default class Population {
       this.harvest();
       // this.trade('share');
       this.trade('buy');
-      this.trade('sell');
+      // this.trade('sell');
       this.consume();
 
       this.itteration++;
@@ -171,7 +171,7 @@ export default class Population {
   buyFood(person, partner) {
     if(partner.alive ===false) return;
     if (person.resources.food <= this.highStock) {
-      // if (partner.resources.food >= this.lowStock) {
+      if (partner.resources.food >= this.lowStock) {
         if (person.resources.money >= this.lowStock) {
           person.resources.food += this.shareAmount;
           partner.resources.food -= this.shareAmount;
@@ -180,7 +180,7 @@ export default class Population {
           person.trader = true;
           partner.tradee = true;
         }
-      // }
+      }
     }
   }
 
@@ -203,7 +203,7 @@ export default class Population {
   buyClothes(person, partner) {
     if(partner.alive ===false) return;
     if (person.resources.clothes <= this.highStock) {
-      // if (partner.resources.clothes >= this.lowStock) {
+      if (partner.resources.clothes >= this.lowStock) {
         if (person.resources.money >= this.lowStock) {
           person.resources.clothes += this.shareAmount;
           partner.resources.clothes -= this.shareAmount;
@@ -212,14 +212,14 @@ export default class Population {
           person.trader = true;
           partner.tradee = true;
         }
-      // }
+      }
     }
   }
 
   sellShelter(person, partner) {
     if(partner.alive ===false) return;
     if (person.resources.shelter >= this.highStock) {
-      // if (partner.resources.shelter <= this.highStock) {
+      if (partner.resources.shelter <= this.highStock) {
         if (partner.resources.money >= this.highStock) {
           person.resources.shelter -= this.shareAmount;
           partner.resources.shelter += this.shareAmount;
@@ -228,7 +228,7 @@ export default class Population {
           person.trader = true;
           partner.tradee = true;
         }
-      // }
+      }
     }
   }
 
