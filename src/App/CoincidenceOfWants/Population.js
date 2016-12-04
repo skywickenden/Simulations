@@ -1,5 +1,7 @@
-import gaussian from './../../libraries/gaussian';
+// import gaussian from './../../libraries/gaussian';
 import random from './../../libraries/random';
+
+import Resources from './Resources';
 
 export default class Population {
 
@@ -7,19 +9,17 @@ export default class Population {
   populationRoot = 0;
   clockSpeed = null;
   people = [];
-  peakResources = {
-    food: 0,
-    clothing: 0,
-    shelter: 0,
-  };
+  peakResources = {};
   resourcesPerTurn = 15;
   consumptionPerTurn = 2;
   shareAmount = 2;
   highStock = 100;
   lowStock = 20;
   itteration = 0;
+  resources = null;
 
   constructor(populationRoot, clockSpeed) {
+    this.resources = new Resources();
     this.populationRoot = populationRoot;
     this.populationCount = populationRoot * populationRoot;
     this.clockSpeed = clockSpeed;
@@ -117,123 +117,56 @@ export default class Population {
   }
 
   sellToPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight) {
-    this.sellFood(person, partnerTop);
-    this.sellFood(person, partnerBottom);
-    this.sellFood(person, partnerLeft);
-    this.sellFood(person, partnerRight);
+    Object.keys(person.resources).forEach((resourceName) => {
+      this.sellResource(person, partnerTop, resourceName);
+      this.sellResource(person, partnerBottom, resourceName);
+      this.sellResource(person, partnerLeft, resourceName);
+      this.sellResource(person, partnerRight, resourceName);
+    });
+  }
 
-    this.sellClothes(person, partnerTop);
-    this.sellClothes(person, partnerBottom);
-    this.sellClothes(person, partnerLeft);
-    this.sellClothes(person, partnerRight);
+  sellResource(person, partner, resourceName) {
+    if(partner.alive ===false) return;
 
-    this.sellShelter(person, partnerTop);
-    this.sellShelter(person, partnerBottom);
-    this.sellShelter(person, partnerLeft);
-    this.sellShelter(person, partnerRight);
+    const resource = person.resources[resourceName];
+    const partnerResource = partner.resources[resourceName];
+
+    if (resource.quantity >= this.highStock) {
+      if (partnerResource.quantity < this.highStock) {
+        if (partner.money >= this.highStock) {
+          resource.quantity = resource.quantity - this.shareAmount;
+          partnerResource.quantity = partnerResource.quantity - this.shareAmount;
+          person.money += this.shareAmount;
+          partner.money -= this.shareAmount;
+          person.tradedWith.push(partner);
+        }
+      }
+    }
   }
 
   buyFromPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight) {
-    this.buyFood(person, partnerTop);
-    this.buyFood(person, partnerBottom);
-    this.buyFood(person, partnerLeft);
-    this.buyFood(person, partnerRight);
 
-    this.buyClothes(person, partnerTop);
-    this.buyClothes(person, partnerBottom);
-    this.buyClothes(person, partnerLeft);
-    this.buyClothes(person, partnerRight);
-
-    this.buyShelter(person, partnerTop);
-    this.buyShelter(person, partnerBottom);
-    this.buyShelter(person, partnerLeft);
-    this.buyShelter(person, partnerRight);
+    Object.keys(person.resources).forEach((resourceName) => {
+      this.buyResource(person, partnerTop, resourceName);
+      this.buyResource(person, partnerBottom, resourceName);
+      this.buyResource(person, partnerLeft, resourceName);
+      this.buyResource(person, partnerRight, resourceName);
+    });
   }
 
-  sellFood(person, partner) {
+  buyResource(person, partner, resourceName) {
     if(partner.alive ===false) return;
-    if (person.resources.food >= this.highStock) {
-      if (partner.resources.food < this.highStock) {
-        if (partner.resources.money >= this.highStock) {
-          person.resources.food -= this.shareAmount;
-          partner.resources.food += this.shareAmount;
-          person.resources.money += this.shareAmount;
-          partner.resources.money -= this.shareAmount;
-          person.tradedWith.push(partner);
-        }
-      }
-    }
-  }
 
-  buyFood(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.food <= this.highStock) {
-      if (partner.resources.food >= this.lowStock) {
-        if (person.resources.money >= this.lowStock) {
-          person.resources.food += this.shareAmount;
-          partner.resources.food -= this.shareAmount;
-          person.resources.money -= this.shareAmount;
-          partner.resources.money += this.shareAmount;
-          person.tradedWith.push(partner);
-        }
-      }
-    }
-  }
+    const resource = person.resources[resourceName];
+    const partnerResource = partner.resources[resourceName];
 
-  sellClothes(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.clothes >= this.highStock) {
-      if (partner.resources.clothes < this.highStock) {
-        if (partner.resources.money >= this.highStock) {
-          person.resources.clothes -= this.shareAmount;
-          partner.resources.clothes += this.shareAmount;
-          person.resources.money += this.shareAmount;
-          partner.resources.money -= this.shareAmount;
-          person.tradedWith.push(partner);
-        }
-      }
-    }
-  }
-
-  buyClothes(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.clothes <= this.highStock) {
-      if (partner.resources.clothes >= this.lowStock) {
-        if (person.resources.money >= this.lowStock) {
-          person.resources.clothes += this.shareAmount;
-          partner.resources.clothes -= this.shareAmount;
-          person.resources.money -= this.shareAmount;
-          partner.resources.money += this.shareAmount;
-          person.tradedWith.push(partner);
-        }
-      }
-    }
-  }
-
-  sellShelter(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.shelter >= this.highStock) {
-      if (partner.resources.shelter <= this.highStock) {
-        if (partner.resources.money >= this.highStock) {
-          person.resources.shelter -= this.shareAmount;
-          partner.resources.shelter += this.shareAmount;
-          person.resources.money += this.shareAmount;
-          partner.resources.money -= this.shareAmount;
-          person.tradedWith.push(partner);
-        }
-      }
-    }
-  }
-
-  buyShelter(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.shelter <= this.highStock) {
-      if (partner.resources.shelter >= this.lowStock) {
-        if (person.resources.money >= this.lowStock) {
-          person.resources.shelter += this.shareAmount;
-          partner.resources.shelter -= this.shareAmount;
-          person.resources.money -= this.shareAmount;
-          partner.resources.money += (this.shareAmount);
+    if (resource.quantity <= this.highStock) {
+      if (partnerResource.quantity >= this.lowStock) {
+        if (person.money >= this.lowStock) {
+          resource.quantity += this.shareAmount;
+          partnerResource.quantity -= this.shareAmount;
+          person.money -= this.shareAmount;
+          partner.money += this.shareAmount;
           person.tradedWith.push(partner);
         }
       }
@@ -241,131 +174,64 @@ export default class Population {
   }
 
   shareWithPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight) {
-    this.shareFood(person, partnerTop);
-    this.shareFood(person, partnerBottom);
-    this.shareFood(person, partnerLeft);
-    this.shareFood(person, partnerRight);
-
-    this.shareClothes(person, partnerTop);
-    this.shareClothes(person, partnerBottom);
-    this.shareClothes(person, partnerLeft);
-    this.shareClothes(person, partnerRight);
-
-    this.shareShelter(person, partnerTop);
-    this.shareShelter(person, partnerBottom);
-    this.shareShelter(person, partnerLeft);
-    this.shareShelter(person, partnerRight);
+    Object.keys(person.resources).forEach((resourceName1) => {
+      Object.keys(person.resources).forEach((resourceName2) => {
+        if (resourceName1 !== resourceName2) {
+          this.shareResource(person, partnerTop, resourceName1, resourceName2);
+          this.shareResource(person, partnerBottom, resourceName1, resourceName2);
+          this.shareResource(person, partnerLeft, resourceName1, resourceName2);
+          this.shareResource(person, partnerRight, resourceName1, resourceName2);
+        }
+      });
+    });
   }
 
-  shareFood(person, partner) {
+  shareResource(person, partner, resourceName1, resourceName2) {
     if(partner.alive ===false) return;
-    if (person.resources.food <= this.lowStock) {
-      if (partner.resources.food >= this.highStock) {
-        if (person.resources.shelter >= this.highStock) {
-          if (partner.resources.shelter <= this.lowStock) {
-            person.resources.food += this.shareAmount;
-            partner.resources.food -= this.shareAmount;
-            person.resources.shelter -= this.shareAmount;
-            partner.resources.shelter += this.shareAmount;
-            person.tradedWith.push(partner);
-          }
-        } else if (person.resources.clothes >= this.highStock) {
-          if (partner.resources.clothes <= this.lowStock) {
-            person.resources.food += this.shareAmount;
-            partner.resources.food -= this.shareAmount;
-            person.resources.clothes -= this.shareAmount;
-            partner.resources.clothes += this.shareAmount;
+
+    const resource1 = person.resources[resourceName1];
+    const resource2 = person.resources[resourceName2];
+    const partnerResource1 = partner.resources[resourceName1];
+    const partnerResource2 = partner.resources[resourceName2];
+
+    if (resource1.quantity <= this.lowStock) {
+      if (partnerResource1.quantity >= this.highStock) {
+        if (resource2.quantity >= this.highStock) {
+          if (partnerResource2.quantity <= this.lowStock) {
+            resource1.quantity= resource1.quantity + this.shareAmount;
+            partnerResource1.quantity = partnerResource1.quantity - this.shareAmount;
+            resource2.quantity = resource2.quantity - this.shareAmount;
+            partnerResource2.quantity = partnerResource2.quantity + this.shareAmount;
             person.tradedWith.push(partner);
           }
         }
       }
     }
-  }
-
-  shareClothes(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.clothes <= this.lowStock) {
-      if (partner.resources.clothes >= this.highStock) {
-        if (person.resources.shelter >= this.highStock) {
-          if (partner.resources.shelter <= this.lowStock) {
-            person.resources.clothes += this.shareAmount;
-            partner.resources.clothes -= this.shareAmount;
-            person.resources.shelter -= this.shareAmount;
-            partner.resources.shelter += this.shareAmount;
-            person.tradedWith.push(partner);
-          }
-        } else if (person.resources.food >= this.highStock) {
-          if (partner.resources.food <= this.lowStock) {
-            person.resources.clothes += this.shareAmount;
-            partner.resources.clothes -= this.shareAmount;
-            person.resources.food -= this.shareAmount;
-            partner.resources.food += this.shareAmount;
-            person.tradedWith.push(partner);
-          }
-        }
-      }
-    }
-  }
-
-  shareShelter(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.shelter <= this.lowStock) {
-      if (partner.resources.shelter >= this.highStock) {
-        if (person.resources.food >= this.highStock) {
-          if (partner.resources.food <= this.lowStock) {
-            person.resources.shelter += this.shareAmount;
-            partner.resources.shelter -= this.shareAmount;
-            person.resources.food -= this.shareAmount;
-            partner.resources.food += this.shareAmount;
-            person.tradedWith.push(partner);
-          }
-        } else if (person.resources.clothes >= this.highStock) {
-          if (partner.resources.clothes <= this.lowStock) {
-            person.resources.shelter += this.shareAmount;
-            partner.resources.shelter -= this.shareAmount;
-            person.resources.clothes -= this.shareAmount;
-            partner.resources.clothes += this.shareAmount;
-            person.tradedWith.push(partner);
-          }
-        }
-      }
-    }
-  }
+  };
 
   calculateResourceStatus(person) {
     const resources = person.resources;
-    let food = 'stable';
-    let clothes = 'stable';
-    let shelter = 'stable';
-    if (resources.food >= this.highStock) {
-      food = 'tradable';
-      clothes = 'tradable';
-      shelter = 'tradable';
-    }
-    if (resources.food <= this.lowStock) {
-      food = 'needed';
-      clothes = 'needed';
-      shelter = 'needed';
-    }
-    person.resourceStatus = {
-      food,
-      clothes,
-      shelter,
-    };
+    Object.keys(person.resources).forEach((resourceName) => {
+      const resource = person.resources[resourceName];
+
+      resource.status = 'stable';
+      if (resources.quantity >= this.highStock) {
+        resource.status = 'tradable';
+      }
+      if (resources.status <= this.lowStock) {
+        resource.status = 'needed';
+      }
+    });
   }
 
   harvest() {
     this.people.forEach((person) => {
       if (person.alive === false) return;
-
-      person.resources.food += person.perTurnResources.food;
-      person.resources.clothing += person.perTurnResources.clothing;
-      person.resources.shelter += person.perTurnResources.shelter;
-      this.setHighestResource(
-        person.resources.food,
-        person.resources.clothing,
-        person.resources.shelter
-      );
+      Object.keys(person.resources).forEach((resourceName) => {
+        const resource = person.resources[resourceName];
+        resource.quantity = resource.quantity + resource.perTurn;
+        // this.setHighestResource(resource);
+      });
     });
   }
 
@@ -373,96 +239,29 @@ export default class Population {
     this.people.forEach((person) => {
       if (person.alive === false) return;
 
-      const resources = person.resources;
-      resources.food -= this.consumptionPerTurn;
-      resources.food = resources.food < 0 ? 0 : resources.food;
-      resources.clothing -= this.consumptionPerTurn;
-      resources.clothing = resources.clothing < 0 ? 0 : resources.clothing;
-      resources.shelter -= this.consumptionPerTurn;
-      resources.shelter = resources.shelter < 0 ? 0 : resources.shelter;
-
-      // If any resource runs out, then person dies.
-      if (resources.food === 0 || resources.clothing === 0 || resources.shelter === 0) {
-        person.alive = false;
-        person.tradedWith = [];
-      }
+      Object.keys(person.resources).forEach((resourceName) => {
+          const resource = person.resources[resourceName];
+          resource.quantity = resource.quantity - this.consumptionPerTurn;
+          if (resource.quantity < 0) {
+            person.alive = false;
+            person.tradedWith = [];
+          }
+      });
     });
 
-    this.peakResources = {
-      food: this.peakResources.food -= this.consumptionPerTurn,
-      clothing: this.peakResources.clothing -= this.consumptionPerTurn,
-      shelter: this.peakResources.shelter -= this.consumptionPerTurn,
-    };
+
+    // Object.keys(this.peakResources).forEach((resourceName) => {
+    //   const resource = person.resources[resourceName];
+    //   resource -= this.consumptionPerTurn;
+    // });
   }
 
-  setHighestResource(food, clothing, shelter) {
-    if (food > this.peakResources.food) this.peakResources.food = food;
-    if (clothing > this.peakResources.clothing) this.peakResources.clothing = clothing;
-    if (shelter > this.peakResources.shelter) this.peakResources.shelter = shelter;
-  }
-
-  generatePersonsStartingResources() {
-    const startingGuassian = gaussian(60, 10);
-    const food = parseInt(startingGuassian(), 10);
-    const clothing = parseInt(startingGuassian(), 10);
-    const shelter = parseInt(startingGuassian(), 10);
-    const money = 200; // parseInt(startingGuassian(), 10);
-    this.setHighestResource(food, clothing, shelter);
-    return {
-      food,
-      clothing,
-      shelter,
-      money,
-    };
-  }
-
-  generatePerTurnResources() {
-    const primaryResources = parseInt(random() * this.resourcesPerTurn, 10);
-    const remainingResources = this.resourcesPerTurn - primaryResources;
-    let secondaryResources = parseInt(random() * remainingResources, 10);
-    let tertiaryResources = remainingResources - secondaryResources;
-
-    const qtyOfResources = 3;
-    const primaryOrder = parseInt(random() * qtyOfResources, 10);
-
-    const secondaryOrder = parseInt(random() * 2, 10);
-    if (secondaryOrder < 1) {
-      const tmp = secondaryResources;
-      secondaryResources = tertiaryResources;
-      tertiaryResources = tmp;
-    }
-
-    let foodPerTurn = 0;
-    let clothingPerTurn = 0;
-    let shelterPerTurn = 0;
-    switch(primaryOrder) {
-      case 0:
-        foodPerTurn = primaryResources;
-        clothingPerTurn = secondaryResources;
-        shelterPerTurn = tertiaryResources;
-        break;
-
-      case 1:
-        clothingPerTurn = primaryResources;
-        foodPerTurn = secondaryResources;
-        shelterPerTurn = tertiaryResources;
-        break;
-
-      case 2:
-        shelterPerTurn = primaryResources;
-        clothingPerTurn = secondaryResources;
-        foodPerTurn = tertiaryResources;
-        break;
-
-      default:
-        throw new Error('invalid resource order');
-    }
-    return {
-      food: foodPerTurn,
-      clothing: clothingPerTurn,
-      shelter: shelterPerTurn,
-    };
-  }
+  // setHighestResource(personResource) {
+  //   const peakResource = this.peakResources[personResource.name];
+  //   if (personResource.quantity > peakResource.quantity) {
+  //     peakResource.quantity = personResource.quantity;
+  //   }
+  // }
 
   populate() {
     let index = 0;
@@ -473,10 +272,11 @@ export default class Population {
           index: index,
           countX: countX,
           countY: countY,
-          resources: this.generatePersonsStartingResources(),
-          perTurnResources: this.generatePerTurnResources(),
+          resources: this.resources.generatePersonsResources(),
           alive: true,
           resourceStatus: {},
+          money: 100,
+          tradedWith: [],
         });
         index++;
       }

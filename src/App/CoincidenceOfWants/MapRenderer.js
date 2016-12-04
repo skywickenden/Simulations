@@ -57,14 +57,14 @@ export default class MapRenderer {
     if (person) {
       let tradingWith = '';
       person.tradedWith.forEach((partner) => {
-        tradingWith += partner.name + ' ';
+        tradingWith += partner.name;
       });
       let resources = '';
       Object.keys(person.resources).forEach((resourceName) => {
           const resource = person.resources[resourceName];
           resources += ` | ${resourceName} ${resource.quantity}`;
       });
-      this.hoverContents = tradingWith + resources;
+      this.hoverContents = tradingWith + ' | money ' + person.money + resources;
       this.setParentHoverContent(this.hoverContents);
     }
   }
