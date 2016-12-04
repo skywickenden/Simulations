@@ -59,7 +59,12 @@ export default class MapRenderer {
       person.tradedWith.forEach((partner) => {
         tradingWith += partner.name + ' ';
       });
-      this.hoverContents = `index ${person.index} | tradingWith ${tradingWith} | money ${person.resources.money} | food ${person.resources.food} | clothing ${person.resources.clothing} | shelter ${person.resources.shelter}`;
+      let resources = '';
+      Object.keys(person.resources).forEach((resourceName) => {
+          const resource = person.resources[resourceName];
+          resources += ` | ${resourceName} ${resource.quantity}`;
+      });
+      this.hoverContents = tradingWith + resources;
       this.setParentHoverContent(this.hoverContents);
     }
   }
@@ -67,7 +72,7 @@ export default class MapRenderer {
   render() {
     this.context.beginPath();
     this.context.fillStyle = `rgb(255, 255, 255)`;
-    this.context.fillRect(0, 0, this.width, this.height);    
+    this.context.fillRect(0, 0, this.width, this.height);
     for (let countX = 0; countX < this.Population.populationRoot; countX++) {
       for (let countY = 0; countY < this.Population.populationRoot; countY++) {
         const personId = this.calculatePersonId(countX, countY);
@@ -75,10 +80,9 @@ export default class MapRenderer {
         if (countX === this.hoverCountX && countY === this.hoverCountY) {
           this.setHoverContents(person);
         }
-
-        let red = person.resources.food < 255 ? person.resources.food : 255;
-        let green = person.resources.clothing < 255 ? person.resources.clothing : 255;
-        let blue = person.resources.shelter < 255 ? person.resources.shelter : 255;
+        let red = person.resources['food'].quantity < 255 ? person.resources['food'].quantity : 255;
+        let green = person.resources['clothing'].quantity < 255 ? person.resources['clothing'].quantity : 255;
+        let blue = person.resources['shelter'].quantity < 255 ? person.resources['shelter'].quantity : 255;
         if (person.alive === false) {
           red = 0;
           green = 0;
