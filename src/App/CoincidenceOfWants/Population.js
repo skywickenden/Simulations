@@ -31,24 +31,31 @@ export default class Population {
   tickTock() {
     setTimeout(() => {
       this.harvest();
-      this.trade('share');
-      // this.trade('buy');
-      // this.trade('sell');
-      this.consume();
 
+      this.resetTradedWith();
+      this.trade('share');
+      this.trade('buy');
+      this.trade('sell');
+
+      this.consume();
       this.itteration++;
       this.tickTock();
     }, this.clockSpeed);
+  }
+
+  resetTradedWith() {
+    this.people.forEach((person) => {
+      person.soldTo = [];
+      person.boughtFrom = [];
+      person.sharedWith = [];
+    });
   }
 
   trade(tradeType) {
     const tradeList = [];
     this.people.forEach((person) => {
       if (person.alive === false) return;
-      person.soldTo = [];
-      person.boughtFrom = [];
-      person.sharedWith = [];
-      this.calculateResourceStatus(person);
+      // this.calculateResourceStatus(person);
       tradeList.push(person)
     });
     let counter = 0;
@@ -130,20 +137,21 @@ export default class Population {
     if(partner.alive ===false) return;
     Object.keys(person.resources).forEach((resourceName) => {
       const resource = person.resources[resourceName];
-      Object.keys(partner.resources).forEach((partnerResourceName) => {
-        const partnerResource = partner.resources[partnerResourceName];
-        if (resource >= this.highStock) {
-          if (partnerResource < this.highStock) {
-            if (partner.money >= this.highStock) {
-              person.resources[resourceName] -= this.shareAmount;
-              partner.resources[partnerResourceName] += this.shareAmount;
-              person.money += this.shareAmount;
-              partner.money -= this.shareAmount;
-              person.soldTo.push(partner);
-            }
+      const partnerResource = partner.resources[resourceName];
+      if (resource >= this.highStock) {
+        if (partnerResource < this.highStock) {
+          if (partner.money > 0) {
+            const partnerWanted = this.highStock - partner.resources[resourceName];
+            const personAvailable = person.resources[resourceName] - this.highStock;
+            const shareAmount = Math.min(partnerWanted, personAvailable, partner.money);
+            person.resources[resourceName] -= shareAmount;
+            partner.resources[resourceName] += shareAmount;
+            person.money += shareAmount;
+            partner.money -= shareAmount;
+            person.soldTo.push(partner);
           }
         }
-      });
+      }
     });
   }
 
@@ -158,20 +166,21 @@ export default class Population {
     if(partner.alive ===false) return;
     Object.keys(person.resources).forEach((resourceName) => {
       const resource = person.resources[resourceName];
-      Object.keys(partner.resources).forEach((partnerResourceName) => {
-        const partnerResource = partner.resources[partnerResourceName];
-        if (resource <= this.highStock) {
-          if (partnerResource >= this.lowStock) {
-            if (person.money >= this.lowStock) {
-              person.resources[resourceName] += this.shareAmount;
-              partner.resources[partnerResourceName] -= this.shareAmount;
-              person.money -= this.shareAmount;
-              partner.money += this.shareAmount;
-              person.boughtFrom.push(partner);
-            }
+      const partnerResource = partner.resources[resourceName];
+      if (resource <= this.lowStock) {
+        if (partnerResource >= this.highStock) {
+          if (person.money > 0) {
+            const personWanted = this.lowStock - person.resources[resourceName];
+            const partnerAvailable = partner.resources[resourceName] - this.highStock;
+            const shareAmount = Math.min(personWanted, partnerAvailable, person.money);
+            person.resources[resourceName] += shareAmount;
+            partner.resources[resourceName] -= shareAmount;
+            person.money -= shareAmount;
+            partner.money += shareAmount;
+            person.boughtFrom.push(partner);
           }
         }
-      });
+      }
     });
   }
 
@@ -198,18 +207,6 @@ export default class Population {
                 const partnerWanted = this.lowStock - partner.resources[partnerResourceName];
                 const personAvailable = person.resources[partnerResourceName] - this.highStock;
                 const shareAmount = Math.min(personWanted, partnerAvailable, partnerWanted, personAvailable);
-                if (person.name === '15-2') {
-                  console.log(
-                    partner.name,
-                    resourceName,
-                    partnerResourceName,
-                    shareAmount,
-                    person.resources[resourceName],
-                    partner.resources[resourceName],
-                    person.resources[partnerResourceName],
-                    partner.resources[partnerResourceName],
-                  );
-                }
                 person.resources[resourceName] += shareAmount;
                 person.resources[resourceName] -= shareAmount;
                 person.resources[partnerResourceName] -= shareAmount;

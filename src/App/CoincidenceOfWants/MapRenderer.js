@@ -185,15 +185,14 @@ export default class MapRenderer {
         const personId = this.calculatePersonId(countX, countY);
         const person = this.Population.people[personId];
 
-        // this.context.beginPath();
-        // this.context.strokeStyle = `rgb(150, 0, 0)`;
-        // person.soldTo.forEach(this.drawConnection.bind(this, person));
-        // this.context.stroke();
-        // this.context.closePath();
+        this.context.beginPath();
+        this.context.strokeStyle = `rgb(150, 0, 0)`;
+        person.soldTo.forEach(this.drawConnection.bind(this, person));
+        this.context.stroke();
+        this.context.closePath();
 
         this.context.beginPath();
         this.context.strokeStyle = `rgb(0, 150, 0)`;
-        if (countX === 0 && countY === 0) console.log('>', person);
         person.boughtFrom.forEach(this.drawConnection.bind(this, person));
         this.context.stroke();
         this.context.closePath();
