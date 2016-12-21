@@ -15,10 +15,10 @@ export default class CoincidenceOfWants extends Component {
   Renderer = null;
   canvasId = 'canvas';
   Population = null;
-  clockSpeed = 500;
+  clockSpeed = 100;
 
   componentDidMount() {
-    const populationRoot = 3 ;//31;
+    const populationRoot = 31;
     this.Population = new Population(populationRoot, this.clockSpeed);
     this.Renderer = new MapRenderer(
       this.canvasId,

@@ -7,6 +7,7 @@ export default class Population {
   populationRoot = 0;
   clockSpeed = null;
   people = [];
+  startingMoney = 200;
   peakResources = {
     food: 0,
     clothing: 0,
@@ -16,7 +17,7 @@ export default class Population {
   consumptionPerTurn = 2;
   shareAmount = 2;
   highStock = 100;
-  lowStock = 20;
+  lowStock = 50;
   itteration = 0;
 
   constructor(populationRoot, clockSpeed) {
@@ -30,9 +31,9 @@ export default class Population {
   tickTock() {
     setTimeout(() => {
       this.harvest();
-      // this.trade('share');
-      this.trade('buy');
-      this.trade('sell');
+      this.trade('share');
+      // this.trade('buy');
+      // this.trade('sell');
       this.consume();
 
       this.itteration++;
@@ -44,7 +45,9 @@ export default class Population {
     const tradeList = [];
     this.people.forEach((person) => {
       if (person.alive === false) return;
-      person.tradedWith = [];
+      person.soldTo = [];
+      person.boughtFrom = [];
+      person.sharedWith = [];
       this.calculateResourceStatus(person);
       tradeList.push(person)
     });
@@ -117,219 +120,107 @@ export default class Population {
   }
 
   sellToPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight) {
-    this.sellFood(person, partnerTop);
-    this.sellFood(person, partnerBottom);
-    this.sellFood(person, partnerLeft);
-    this.sellFood(person, partnerRight);
+    this.sellResources(person, partnerTop);
+    this.sellResources(person, partnerBottom);
+    this.sellResources(person, partnerLeft);
+    this.sellResources(person, partnerRight);
+  }
 
-    this.sellClothes(person, partnerTop);
-    this.sellClothes(person, partnerBottom);
-    this.sellClothes(person, partnerLeft);
-    this.sellClothes(person, partnerRight);
-
-    this.sellShelter(person, partnerTop);
-    this.sellShelter(person, partnerBottom);
-    this.sellShelter(person, partnerLeft);
-    this.sellShelter(person, partnerRight);
+  sellResources(person, partner) {
+    if(partner.alive ===false) return;
+    Object.keys(person.resources).forEach((resourceName) => {
+      const resource = person.resources[resourceName];
+      Object.keys(partner.resources).forEach((partnerResourceName) => {
+        const partnerResource = partner.resources[partnerResourceName];
+        if (resource >= this.highStock) {
+          if (partnerResource < this.highStock) {
+            if (partner.money >= this.highStock) {
+              person.resources[resourceName] -= this.shareAmount;
+              partner.resources[partnerResourceName] += this.shareAmount;
+              person.money += this.shareAmount;
+              partner.money -= this.shareAmount;
+              person.soldTo.push(partner);
+            }
+          }
+        }
+      });
+    });
   }
 
   buyFromPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight) {
-    this.buyFood(person, partnerTop);
-    this.buyFood(person, partnerBottom);
-    this.buyFood(person, partnerLeft);
-    this.buyFood(person, partnerRight);
-
-    this.buyClothes(person, partnerTop);
-    this.buyClothes(person, partnerBottom);
-    this.buyClothes(person, partnerLeft);
-    this.buyClothes(person, partnerRight);
-
-    this.buyShelter(person, partnerTop);
-    this.buyShelter(person, partnerBottom);
-    this.buyShelter(person, partnerLeft);
-    this.buyShelter(person, partnerRight);
+    this.buyResources(person, partnerTop);
+    this.buyResources(person, partnerBottom);
+    this.buyResources(person, partnerLeft);
+    this.buyResources(person, partnerRight);
   }
 
-  sellFood(person, partner) {
+  buyResources(person, partner) {
     if(partner.alive ===false) return;
-    if (person.resources.food >= this.highStock) {
-      if (partner.resources.food < this.highStock) {
-        if (partner.resources.money >= this.highStock) {
-          person.resources.food -= this.shareAmount;
-          partner.resources.food += this.shareAmount;
-          person.resources.money += this.shareAmount;
-          partner.resources.money -= this.shareAmount;
-          person.tradedWith.push(partner);
+    Object.keys(person.resources).forEach((resourceName) => {
+      const resource = person.resources[resourceName];
+      Object.keys(partner.resources).forEach((partnerResourceName) => {
+        const partnerResource = partner.resources[partnerResourceName];
+        if (resource <= this.highStock) {
+          if (partnerResource >= this.lowStock) {
+            if (person.money >= this.lowStock) {
+              person.resources[resourceName] += this.shareAmount;
+              partner.resources[partnerResourceName] -= this.shareAmount;
+              person.money -= this.shareAmount;
+              partner.money += this.shareAmount;
+              person.boughtFrom.push(partner);
+            }
+          }
         }
-      }
-    }
-  }
-
-  buyFood(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.food <= this.highStock) {
-      if (partner.resources.food >= this.lowStock) {
-        if (person.resources.money >= this.lowStock) {
-          person.resources.food += this.shareAmount;
-          partner.resources.food -= this.shareAmount;
-          person.resources.money -= this.shareAmount;
-          partner.resources.money += this.shareAmount;
-          person.tradedWith.push(partner);
-        }
-      }
-    }
-  }
-
-  sellClothes(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.clothes >= this.highStock) {
-      if (partner.resources.clothes < this.highStock) {
-        if (partner.resources.money >= this.highStock) {
-          person.resources.clothes -= this.shareAmount;
-          partner.resources.clothes += this.shareAmount;
-          person.resources.money += this.shareAmount;
-          partner.resources.money -= this.shareAmount;
-          person.tradedWith.push(partner);
-        }
-      }
-    }
-  }
-
-  buyClothes(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.clothes <= this.highStock) {
-      if (partner.resources.clothes >= this.lowStock) {
-        if (person.resources.money >= this.lowStock) {
-          person.resources.clothes += this.shareAmount;
-          partner.resources.clothes -= this.shareAmount;
-          person.resources.money -= this.shareAmount;
-          partner.resources.money += this.shareAmount;
-          person.tradedWith.push(partner);
-        }
-      }
-    }
-  }
-
-  sellShelter(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.shelter >= this.highStock) {
-      if (partner.resources.shelter <= this.highStock) {
-        if (partner.resources.money >= this.highStock) {
-          person.resources.shelter -= this.shareAmount;
-          partner.resources.shelter += this.shareAmount;
-          person.resources.money += this.shareAmount;
-          partner.resources.money -= this.shareAmount;
-          person.tradedWith.push(partner);
-        }
-      }
-    }
-  }
-
-  buyShelter(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.shelter <= this.highStock) {
-      if (partner.resources.shelter >= this.lowStock) {
-        if (person.resources.money >= this.lowStock) {
-          person.resources.shelter += this.shareAmount;
-          partner.resources.shelter -= this.shareAmount;
-          person.resources.money -= this.shareAmount;
-          partner.resources.money += (this.shareAmount);
-          person.tradedWith.push(partner);
-        }
-      }
-    }
+      });
+    });
   }
 
   shareWithPartners(person, partnerTop, partnerBottom, partnerLeft, partnerRight) {
-    this.shareFood(person, partnerTop);
-    this.shareFood(person, partnerBottom);
-    this.shareFood(person, partnerLeft);
-    this.shareFood(person, partnerRight);
-
-    this.shareClothes(person, partnerTop);
-    this.shareClothes(person, partnerBottom);
-    this.shareClothes(person, partnerLeft);
-    this.shareClothes(person, partnerRight);
-
-    this.shareShelter(person, partnerTop);
-    this.shareShelter(person, partnerBottom);
-    this.shareShelter(person, partnerLeft);
-    this.shareShelter(person, partnerRight);
+    this.shareResources(person, partnerTop);
+    this.shareResources(person, partnerBottom);
+    this.shareResources(person, partnerLeft);
+    this.shareResources(person, partnerRight);
   }
 
-  shareFood(person, partner) {
+  shareResources(person, partner) {
     if(partner.alive ===false) return;
-    if (person.resources.food <= this.lowStock) {
-      if (partner.resources.food >= this.highStock) {
-        if (person.resources.shelter >= this.highStock) {
-          if (partner.resources.shelter <= this.lowStock) {
-            person.resources.food += this.shareAmount;
-            partner.resources.food -= this.shareAmount;
-            person.resources.shelter -= this.shareAmount;
-            partner.resources.shelter += this.shareAmount;
-            person.tradedWith.push(partner);
-          }
-        } else if (person.resources.clothes >= this.highStock) {
-          if (partner.resources.clothes <= this.lowStock) {
-            person.resources.food += this.shareAmount;
-            partner.resources.food -= this.shareAmount;
-            person.resources.clothes -= this.shareAmount;
-            partner.resources.clothes += this.shareAmount;
-            person.tradedWith.push(partner);
+    Object.keys(person.resources).forEach((resourceName) => {
+      const resource = person.resources[resourceName];
+      Object.keys(partner.resources).forEach((partnerResourceName) => {
+        if (resourceName === partnerResourceName) return;
+        const partnerResource = person.resources[partnerResourceName];
+        if (person.resources[resourceName] <= this.lowStock) {
+          if (partner.resources[resourceName] >= this.highStock) {
+            if (partner.resources[partnerResourceName] <= this.lowStock) {
+              if (person.resources[partnerResourceName] >= this.highStock) {
+                const personWanted = this.lowStock - person.resources[resourceName];
+                const partnerAvailable = partner.resources[resourceName] - this.highStock;
+                const partnerWanted = this.lowStock - partner.resources[partnerResourceName];
+                const personAvailable = person.resources[partnerResourceName] - this.highStock;
+                const shareAmount = Math.min(personWanted, partnerAvailable, partnerWanted, personAvailable);
+                if (person.name === '15-2') {
+                  console.log(
+                    partner.name,
+                    resourceName,
+                    partnerResourceName,
+                    shareAmount,
+                    person.resources[resourceName],
+                    partner.resources[resourceName],
+                    person.resources[partnerResourceName],
+                    partner.resources[partnerResourceName],
+                  );
+                }
+                person.resources[resourceName] += shareAmount;
+                person.resources[resourceName] -= shareAmount;
+                person.resources[partnerResourceName] -= shareAmount;
+                person.resources[partnerResourceName] += shareAmount;
+                person.sharedWith.push(partner);
+              }
+            }
           }
         }
-      }
-    }
-  }
-
-  shareClothes(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.clothes <= this.lowStock) {
-      if (partner.resources.clothes >= this.highStock) {
-        if (person.resources.shelter >= this.highStock) {
-          if (partner.resources.shelter <= this.lowStock) {
-            person.resources.clothes += this.shareAmount;
-            partner.resources.clothes -= this.shareAmount;
-            person.resources.shelter -= this.shareAmount;
-            partner.resources.shelter += this.shareAmount;
-            person.tradedWith.push(partner);
-          }
-        } else if (person.resources.food >= this.highStock) {
-          if (partner.resources.food <= this.lowStock) {
-            person.resources.clothes += this.shareAmount;
-            partner.resources.clothes -= this.shareAmount;
-            person.resources.food -= this.shareAmount;
-            partner.resources.food += this.shareAmount;
-            person.tradedWith.push(partner);
-          }
-        }
-      }
-    }
-  }
-
-  shareShelter(person, partner) {
-    if(partner.alive ===false) return;
-    if (person.resources.shelter <= this.lowStock) {
-      if (partner.resources.shelter >= this.highStock) {
-        if (person.resources.food >= this.highStock) {
-          if (partner.resources.food <= this.lowStock) {
-            person.resources.shelter += this.shareAmount;
-            partner.resources.shelter -= this.shareAmount;
-            person.resources.food -= this.shareAmount;
-            partner.resources.food += this.shareAmount;
-            person.tradedWith.push(partner);
-          }
-        } else if (person.resources.clothes >= this.highStock) {
-          if (partner.resources.clothes <= this.lowStock) {
-            person.resources.shelter += this.shareAmount;
-            partner.resources.shelter -= this.shareAmount;
-            person.resources.clothes -= this.shareAmount;
-            partner.resources.clothes += this.shareAmount;
-            person.tradedWith.push(partner);
-          }
-        }
-      }
-    }
+      });
+    });
   }
 
   calculateResourceStatus(person) {
@@ -384,7 +275,9 @@ export default class Population {
       // If any resource runs out, then person dies.
       if (resources.food === 0 || resources.clothing === 0 || resources.shelter === 0) {
         person.alive = false;
-        person.tradedWith = [];
+        person.soldTo = [];
+        person.boughtFrom = [];
+        person.sharedWith = [];
       }
     });
 
@@ -406,13 +299,11 @@ export default class Population {
     const food = parseInt(startingGuassian(), 10);
     const clothing = parseInt(startingGuassian(), 10);
     const shelter = parseInt(startingGuassian(), 10);
-    const money = 200; // parseInt(startingGuassian(), 10);
     this.setHighestResource(food, clothing, shelter);
     return {
       food,
       clothing,
       shelter,
-      money,
     };
   }
 
@@ -474,9 +365,13 @@ export default class Population {
           countX: countX,
           countY: countY,
           resources: this.generatePersonsStartingResources(),
+          money: this.startingMoney,
           perTurnResources: this.generatePerTurnResources(),
           alive: true,
           resourceStatus: {},
+          soldTo: [],
+          boughtFrom: [],
+          sharedWith: [],
         });
         index++;
       }
