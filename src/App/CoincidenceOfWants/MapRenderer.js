@@ -64,7 +64,8 @@ export default class MapRenderer {
         const resource = person.resources[resourceName];
         resources += ` | ${resourceName} ${resource}`;
       });
-      this.hoverContents = person.name + ' ' + tradingWith + ' | money ' + person.money + resources;
+      const goldMine = person.goldMine === true ? ' *gold mine* ' : '';
+      this.hoverContents = person.name + ' ' + tradingWith + ' | money ' + person.money + resources + goldMine;
       this.setParentHoverContent(this.hoverContents);
     }
   }

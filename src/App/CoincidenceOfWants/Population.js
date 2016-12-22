@@ -15,10 +15,13 @@ export default class Population {
   };
   resourcesPerTurn = 15;
   consumptionPerTurn = 2;
+  chanceOfGoldMine = 0.1;
+  goldMinePerTurn = 5;
   shareAmount = 2;
   highStock = 100;
   lowStock = 50;
   itteration = 0;
+  totalDead = 0;
 
   constructor(populationRoot, clockSpeed) {
     this.populationRoot = populationRoot;
@@ -194,10 +197,8 @@ export default class Population {
   shareResources(person, partner) {
     if(partner.alive ===false) return;
     Object.keys(person.resources).forEach((resourceName) => {
-      const resource = person.resources[resourceName];
       Object.keys(partner.resources).forEach((partnerResourceName) => {
         if (resourceName === partnerResourceName) return;
-        const partnerResource = person.resources[partnerResourceName];
         if (person.resources[resourceName] <= this.lowStock) {
           if (partner.resources[resourceName] >= this.highStock) {
             if (partner.resources[partnerResourceName] <= this.lowStock) {
@@ -254,6 +255,9 @@ export default class Population {
         person.resources.clothing,
         person.resources.shelter
       );
+      if (person.goldMine === true) {
+        person.money += this.goldMinePerTurn;
+      }
     });
   }
 
@@ -272,6 +276,7 @@ export default class Population {
       // If any resource runs out, then person dies.
       if (resources.food === 0 || resources.clothing === 0 || resources.shelter === 0) {
         person.alive = false;
+        this.totalDead++;
         person.soldTo = [];
         person.boughtFrom = [];
         person.sharedWith = [];
@@ -363,6 +368,7 @@ export default class Population {
           countY: countY,
           resources: this.generatePersonsStartingResources(),
           money: this.startingMoney,
+          goldMine: Math.random() < this.chanceOfGoldMine ? true : false,
           perTurnResources: this.generatePerTurnResources(),
           alive: true,
           resourceStatus: {},

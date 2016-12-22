@@ -71,6 +71,9 @@ export default class CoincidenceOfWants extends Component {
       display: hoverContent.length !== 0 ? 'block' : 'none',
     };
 
+    const totalDead = this.Population === null ? 0 : this.Population.totalDead;
+    const itteration = this.Population === null ? 0 : this.Population.itteration;
+
     return (
       <div className="CoincidenceOfWants">
         <h4>Coincidence Of Wants</h4>
@@ -87,6 +90,14 @@ export default class CoincidenceOfWants extends Component {
             onMouseOut={this.onCanvasOut.bind(this)}
             onMouseMove={this.onCanvasHover.bind(this)}
             />
+        </div>
+        <div className="stats">
+          <div>
+            Tick Tock: {itteration}
+          </div>
+          <div>
+            Total Dead: {totalDead}
+          </div>
         </div>
 
         <p>
