@@ -27,16 +27,19 @@ export default class MapRenderer {
     this.height = this.canvas.height;
     this.cellWidth = Math.floor(this.width / Population.populationRoot);
     this.cellHeight = Math.floor(this.height / Population.populationRoot);
-    this.tickTock();
+    this.main();
   }
 
   tickTock() {
     setTimeout(() => {
-      this.render();
-
-      this.itteration++;
-      this.tickTock();
+      this.main();
     }, this.clockSpeed);
+  }
+
+  main() {
+    this.draw();
+    this.itteration++;
+    this.tickTock();
   }
 
   setHover(hoverX, hoverY) {
@@ -70,7 +73,7 @@ export default class MapRenderer {
     }
   }
 
-  renderCells() {
+  drawCells() {
     for (let countX = 0; countX < this.Population.populationRoot; countX++) {
       for (let countY = 0; countY < this.Population.populationRoot; countY++) {
         const personId = this.calculatePersonId(countX, countY);
@@ -180,7 +183,7 @@ export default class MapRenderer {
     }
   }
 
-  renderConnections() {
+  drawConnections() {
     for (let countX = 0; countX < this.Population.populationRoot; countX++) {
       for (let countY = 0; countY < this.Population.populationRoot; countY++) {
         const personId = this.calculatePersonId(countX, countY);
@@ -207,10 +210,10 @@ export default class MapRenderer {
     }
   }
 
-  render() {
+  draw() {
     this.context.fillStyle = `rgb(255, 255, 255)`;
     this.context.fillRect(0, 0, this.width, this.height);
-    this.renderCells();
-    this.renderConnections();
+    this.drawCells();
+    this.drawConnections();
   }
 }

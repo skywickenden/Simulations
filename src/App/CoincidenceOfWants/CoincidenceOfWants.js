@@ -3,7 +3,7 @@ import './CoincidenceOfWants.css';
 
 import MapRenderer from './MapRenderer';
 import Population from './Population';
-import Graph from './Graph';
+import EqualityGraph from './EqualityGraph';
 
 export default class CoincidenceOfWants extends Component {
 
@@ -15,7 +15,7 @@ export default class CoincidenceOfWants extends Component {
       width: 700,
       height: 400,
     },
-    graph1: {
+    equalityGraph: {
       left: 710,
       width: 100,
       height: 100,
@@ -27,8 +27,8 @@ export default class CoincidenceOfWants extends Component {
   canvasId = 'canvas';
   population = null;
   clockSpeed = 100;
-  graph1 = null;
-  graph1Id = 'graph1';
+  equalityGraph = null;
+  equalityGraphId = 'equalityGraph';
 
   componentWillMount() {
     this.calculateCanvasSize();
@@ -42,9 +42,10 @@ export default class CoincidenceOfWants extends Component {
       this.clockSpeed,
       this.setHoverContent.bind(this)
     );
-    this.graph1 = new Graph(
-      this.graph1Id,
-      this.clockSpeed
+    this.equalityGraph = new EqualityGraph(
+      this.equalityGraphId,
+      this.clockSpeed,
+      this.population
     );
   }
 
@@ -55,19 +56,19 @@ export default class CoincidenceOfWants extends Component {
     const totalWidth = window.innerWidth - (2 * containerPadding);
     canvas.width = Math.floor(totalWidth * 0.7);
     canvas.width = Math.floor(canvas.width / this.state.populationRoot);
-    canvas.width = canvas.width * this.state.populationRoot;
+    canvas.width *= this.state.populationRoot;
     canvas.height = Math.floor(window.innerHeight * 0.7);
     canvas.height = Math.floor(canvas.height / this.state.populationRoot);
-    canvas.height = canvas.height * this.state.populationRoot;
+    canvas.height *= this.state.populationRoot;
 
-    const graph1 = {};
-    graph1.left = canvas.width + (2 * padding);
-    graph1.width = totalWidth - graph1.left - containerPadding;
-    graph1.height = (canvas.height / 2) - padding;
+    const equalityGraph = {};
+    equalityGraph.left = canvas.width + (2 * padding);
+    equalityGraph.width = totalWidth - equalityGraph.left - containerPadding;
+    equalityGraph.height = (canvas.height / 2) - padding;
 
     this.setState({
       canvas,
-      graph1,
+      equalityGraph,
     });
   }
 
@@ -126,14 +127,14 @@ export default class CoincidenceOfWants extends Component {
             {hoverContent}
           </div>
           <canvas
-            id="graph1"
-            className="graph1"
-            width={this.state.graph1.width}
-            height={this.state.graph1.height}
+            id="equalityGraph"
+            className="equalityGraph"
+            width={this.state.equalityGraph.width}
+            height={this.state.equalityGraph.height}
             style={{
-              left: this.state.graph1.left,
-              width: this.state.graph1.width,
-              height: this.state.graph1.height,
+              left: this.state.equalityGraph.left,
+              width: this.state.equalityGraph.width,
+              height: this.state.equalityGraph.height,
             }}
             />
           <canvas

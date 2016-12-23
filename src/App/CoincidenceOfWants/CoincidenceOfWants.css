@@ -6,7 +6,7 @@
   position: relative;
 }
 
-.graph1 {
+.equalityGraph {
   position: absolute;
   border: 1px solid #aaaaaa;
 }
@@ -17,4 +17,5 @@
   border: 1px solid #bbb;
   border-radius: 4px;
   padding: 10px;
+  z-index: 1000;
 }

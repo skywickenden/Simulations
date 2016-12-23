@@ -17,6 +17,7 @@ export default class Population {
   consumptionPerTurn = 2;
   chanceOfGoldMine = 0.1;
   goldMinePerTurn = 5;
+  maxWealth = 0;
   shareAmount = 2;
   highStock = 100;
   lowStock = 50;
@@ -28,22 +29,24 @@ export default class Population {
     this.populationCount = populationRoot * populationRoot;
     this.clockSpeed = clockSpeed;
     this.populate();
-    this.tickTock();
+    this.main();
   }
 
   tickTock() {
     setTimeout(() => {
-      this.harvest();
-
-      this.resetTradedWith();
-      this.trade('share');
-      this.trade('buy');
-      this.trade('sell');
-
-      this.consume();
-      this.itteration++;
-      this.tickTock();
+      this.main();
     }, this.clockSpeed);
+  }
+
+  main() {
+    this.harvest();
+    this.resetTradedWith();
+    this.trade('share');
+    this.trade('buy');
+    this.trade('sell');
+    this.consume();
+    this.itteration++;
+    this.tickTock();
   }
 
   resetTradedWith() {
@@ -244,6 +247,7 @@ export default class Population {
   }
 
   harvest() {
+    this.maxWealth = 0;
     this.people.forEach((person) => {
       if (person.alive === false) return;
 
@@ -257,6 +261,9 @@ export default class Population {
       );
       if (person.goldMine === true) {
         person.money += this.goldMinePerTurn;
+      }
+      if (person.money > this.maxWealth) {
+        this.maxWealth = person.money;
       }
     });
   }
@@ -361,7 +368,7 @@ export default class Population {
     let index = 0;
     for(let countX = 0; countX < this.populationRoot; countX++) {
       for(let countY = 0; countY < this.populationRoot; countY++) {
-        this.people.push({
+        const person = {
           name: `${countX}-${countY}`,
           index: index,
           countX: countX,
@@ -375,7 +382,8 @@ export default class Population {
           soldTo: [],
           boughtFrom: [],
           sharedWith: [],
-        });
+        };
+        this.people.push(person);
         index++;
       }
     }
