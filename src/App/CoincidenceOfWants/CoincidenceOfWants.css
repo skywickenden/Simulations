@@ -6,6 +6,11 @@
   position: relative;
 }
 
+.graph1 {
+  position: absolute;
+  border: 1px solid #aaaaaa;
+}
+
 .canvasHover {
   position: absolute;
   background-color: #fff;
