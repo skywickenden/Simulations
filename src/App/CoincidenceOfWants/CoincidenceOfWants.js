@@ -10,6 +10,11 @@ export default class CoincidenceOfWants extends Component {
     hoverX: null,
     hoverY: null,
     hoverContent: '',
+    canvas: {
+      width: 700,
+      height: 400,
+    },
+    populationRoot: 31,
   };
 
   Renderer = null;
@@ -17,15 +22,35 @@ export default class CoincidenceOfWants extends Component {
   Population = null;
   clockSpeed = 100;
 
+  componentWillMount() {
+    this.calculateCanvasSize();
+  }
+
   componentDidMount() {
-    const populationRoot = 31;
-    this.Population = new Population(populationRoot, this.clockSpeed);
+    this.Population = new Population(this.state.populationRoot, this.clockSpeed);
     this.Renderer = new MapRenderer(
       this.canvasId,
       this.Population,
       this.clockSpeed,
       this.setHoverContent.bind(this)
     );
+  }
+
+  calculateCanvasSize() {
+    console.log(window.innerWidth);
+    let width = Math.floor(window.innerWidth * 0.7);
+    width = Math.floor(width / this.state.populationRoot);
+    width = width * this.state.populationRoot;
+    let height = Math.floor(window.innerHeight * 0.7);
+    height = Math.floor(height / this.state.populationRoot);
+    height = height * this.state.populationRoot;
+
+    this.setState({
+      canvas: {
+        width,
+        height,
+      }
+    });
   }
 
   onCanvasHover(event) {
@@ -84,8 +109,8 @@ export default class CoincidenceOfWants extends Component {
           </div>
           <canvas
             id="canvas"
-            width="1000"
-            height="600"
+            width={this.state.canvas.width}
+            height={this.state.canvas.height}
             ref="canvas"
             onMouseOut={this.onCanvasOut.bind(this)}
             onMouseMove={this.onCanvasHover.bind(this)}
