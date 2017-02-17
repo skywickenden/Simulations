@@ -3,6 +3,7 @@ import { BrowserRouter, Match ,Miss, Link } from 'react-router';
 // https://react-router.now.sh/quick-start
 
 import CoincidenceOfWants from './CoincidenceOfWants/CoincidenceOfWants';
+import DaisyWorld from './DaisyWorld/DaisyWorld';
 import Home from './Home/Home';
 import NotFound from './NotFound/NotFound';
 
@@ -22,6 +23,7 @@ export default class App extends Component {
           </div>
 
           <Match exactly pattern="/conincidence-of-wants" component={CoincidenceOfWants} />
+          <Match exactly pattern="/daisy-world" component={DaisyWorld} />
           <Match exactly pattern="/" component={Home} />
           <Miss component={NotFound}/>
 

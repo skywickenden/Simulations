@@ -41,10 +41,17 @@ export default class EqualityGraph {
   drawLines() {
     this.context.beginPath();
     this.context.strokeStyle = `rgb(150, 150, 150)`;
+    const equality = [];
     this.population.people.forEach((person, index) => {
+      const top = this.height - Math.floor(person.money / this.population.maxWealth * this.height);
+      equality.push(top);
+    });
+    equality.sort((a, b) => {
+      return a - b;
+    });
+    equality.forEach((top, index) => {
       const left = Math.floor(index / this.population.people.length * this.width);
       this.context.moveTo(left, this.height);
-      const top = this.height - Math.floor(person.money / this.population.maxWealth * this.height);
       this.context.lineTo(left, top);
     });
     this.context.stroke();
