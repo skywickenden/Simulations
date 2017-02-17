@@ -1,25 +1,27 @@
 import React, { Component } from 'react';
-import './CoincidenceOfWants.css';
+import './DaisyWorld.css';
 
 import MapRenderer from './MapRenderer';
-import Population from './Population';
+import Daisies from './Daisies';
 
-export default class CoincidenceOfWants extends Component {
+export default class DaisyWorld extends Component {
 
   state = {
+    hoverX: null,
+    hoverY: null,
   };
 
-  Renderer = null;
-  canvasId = 'canvas';
-  Population = null;
-  clockSpeed = 100;
+  renderer = null;
+  canvasId = 'daisyWorld';
+  daisies = null;
+  clockSpeed = 10;
+  populationRoot = 50;
 
   componentDidMount() {
-    const populationRoot = 31;
-    this.Population = new Population(populationRoot, this.clockSpeed);
-    this.Renderer = new MapRenderer(
+    this.daisies = new Daisies(this.populationRoot, this.clockSpeed);
+    this.renderer = new MapRenderer(
       this.canvasId,
-      this.Population,
+      this.daisies,
       this.clockSpeed,
       this.setHoverContent.bind(this)
     );
@@ -36,7 +38,7 @@ export default class CoincidenceOfWants extends Component {
       hoverX: hoverX + additionalOffset,
       hoverY: hoverY + additionalOffset,
     });
-    this.Renderer.setHover(hoverX, hoverY);
+    this.renderer.setHover(hoverX, hoverY);
   }
 
   setHoverContent(content) {
@@ -55,8 +57,8 @@ export default class CoincidenceOfWants extends Component {
   render() {
 
     let hoverContent = [];
-    if (this.Renderer
-      && this.Renderer.displayHover
+    if (this.renderer
+      && this.renderer.displayHover
       && this.state.hoverX !== null
     ) {
       hoverContent = this.state.hoverContent;
@@ -68,19 +70,19 @@ export default class CoincidenceOfWants extends Component {
       display: hoverContent.length !== 0 ? 'block' : 'none',
     };
 
-    const totalDead = this.Population === null ? 0 : this.Population.totalDead;
-    const itteration = this.Population === null ? 0 : this.Population.itteration;
+    // const totalDead = this.Population === null ? 0 : this.Population.totalDead;
+    // const itteration = this.Population === null ? 0 : this.Population.itteration;
 
     return (
-      <div className="CoincidenceOfWants">
-        <h4>Coincidence Of Wants</h4>
+      <div className="Daisy World">
+        <h4>Daisy World</h4>
 
         <div className="canvasContainer">
           <div className="canvasHover" style={hoverStyle}>
             {hoverContent}
           </div>
           <canvas
-            id="airTemperature"
+            id="daisyWorld"
             width="1000"
             height="600"
             ref="canvas"
