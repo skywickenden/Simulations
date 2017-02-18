@@ -4,6 +4,7 @@ import { BrowserRouter, Match ,Miss, Link } from 'react-router';
 
 import CoincidenceOfWants from './CoincidenceOfWants/CoincidenceOfWants';
 import DaisyWorld from './DaisyWorld/DaisyWorld';
+import Individual from './Individual/Individual';
 import Home from './Home/Home';
 import NotFound from './NotFound/NotFound';
 
@@ -24,6 +25,7 @@ export default class App extends Component {
 
           <Match exactly pattern="/conincidence-of-wants" component={CoincidenceOfWants} />
           <Match exactly pattern="/daisy-world" component={DaisyWorld} />
+          <Match exactly pattern="/individual" component={Individual} />
           <Match exactly pattern="/" component={Home} />
           <Miss component={NotFound}/>
 

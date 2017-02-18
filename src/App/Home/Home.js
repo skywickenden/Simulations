@@ -13,9 +13,16 @@ export default class Home extends Component {
               Conincidence Of Wants
             </Link>
           </li>
+
           <li>
             <Link to="daisy-world">
               Daisy World
+            </Link>
+          </li>
+
+          <li>
+            <Link to="individual">
+              Individual
             </Link>
           </li>
         </ul>
