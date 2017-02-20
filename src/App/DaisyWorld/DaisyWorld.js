@@ -81,14 +81,27 @@ export default class DaisyWorld extends Component {
           <div className="canvasHover" style={hoverStyle}>
             {hoverContent}
           </div>
+
           <canvas
             id="daisyWorld"
-            width="1000"
+            width="600"
             height="600"
             ref="canvas"
             onMouseOut={this.onCanvasOut.bind(this)}
             onMouseMove={this.onCanvasHover.bind(this)}
             />
+
+          <canvas
+            id="earthTemperature"
+            width="50"
+            height="600"
+            ref="earthCanvas" />
+
+          <canvas
+            id="sunTemperature"
+            width="50"
+            height="600"
+            ref="sunCanvas" />
         </div>
         <div className="stats">
         </div>

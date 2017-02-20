@@ -42,6 +42,14 @@ export default class MapRenderer {
   setHover(hoverX, hoverY) {
     const countX = parseInt(hoverX / this.cellWidth, 10);
     const countY = parseInt(hoverY / this.cellHeight, 10);
+
+    if (countY > this.daisies.daisies.length - 1
+      || countX > this.daisies.daisies[countY].length - 1
+    ) {
+      this.setParentHoverContent('');
+      return;
+    }
+
     this.hoverCountX = countX;
     this.hoverCountY = countY;
     const daisy = this.daisies.daisies[countY][countX];

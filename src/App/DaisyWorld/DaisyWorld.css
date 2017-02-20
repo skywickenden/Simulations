@@ -5,3 +5,13 @@
 .canvasContainer {
   position: relative;
 }
+
+#sunTemperature {
+  border: 1px solid #666;
+  margin-left: 10px;
+}
+
+#earthTemperature {
+  border: 1px solid #666;
+  margin-left: 10px;
+}
