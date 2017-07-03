@@ -18,7 +18,16 @@ export default class Start extends Component {
     return (
       <div className="start">
         {this.state.stage === 'start' ? (
-          <button onClick={this.changeStage.bind(this, 'ponder')}>Scratch your genitals</button>
+          <button onClick={this.changeStage.bind(this, 'genitals')}>Scratch your genitals</button>
+        ) : ''}
+
+        {this.state.stage === 'genitals' ? (
+          <div>
+            <p>
+              It's not doing anything for you.
+            </p>
+            <button onClick={this.changeStage.bind(this, 'ponder')}>Ponder existance</button>
+          </div>
         ) : ''}
 
         {this.state.stage === 'ponder' ? (

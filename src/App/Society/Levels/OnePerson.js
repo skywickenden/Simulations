@@ -10,7 +10,9 @@ export default class OnePerson extends Component {
   initialPersonEnergy = 300;
 
   world = null;
-  individual = null;
+  person = null;
+
+  subLevel = 1;
 
   state = {
     energyQuantity: 0,
@@ -19,18 +21,20 @@ export default class OnePerson extends Component {
   };
 
   componentWillMount() {
-    this.world = new World(this.clockSpeed, this.initialPersonEnergy);
-    this.setState({activity: this.world.people[0].activity.name})
+    console.log('componentWillMount');
+    this.world = new World(this.clockSpeed, this.initialPersonEnergy, 1);
+    this.person = this.world.people[0];
+    this.setState({activity: this.person.activity.name})
     this.tickTock();
   }
 
   tickTock() {
     setTimeout(() => {
-      if(this.world.people[0]) {
+      if(this.person) {
         this.setState({
-          energyQuantity: parseInt(this.world.people[0].needs.energy.quantity, 10),
-          emotion: this.world.people[0].emotion.name,
-          activity: this.world.people[0].activity.name,
+          energyQuantity: parseInt(this.person.needs.energy.quantity, 10),
+          emotion: this.person.emotion.name,
+          activity: this.person.activity.name,
         });
       } else {
         this.setState({activity: 'Dead'});
@@ -39,10 +43,16 @@ export default class OnePerson extends Component {
     }, this.clockSpeed * this.clockModifier);
   }
 
-  onEatSomething() {
-    if(this.world.people[0]) {
-      this.world.people[0].activity.engageActivity('eatEnvironment');
+  eatSomethingClicked() {
+    if(this.person) {
+      this.person.activity.engageActivity('eatEnvironment');
     }
+  }
+
+  tryAgainClicked() {
+    if (this.subLevel === 1) this.world.experience.forage.levelUp();
+    // this.subLevel++;
+    this.person.rebirth();
   }
 
   render() {
@@ -61,10 +71,28 @@ export default class OnePerson extends Component {
         <div>
           Energy: {this.state.energyQuantity}
         </div>
-
+        <div>Message Log:</div>
         <div>
-          <button onClick={this.onEatSomething.bind(this)}>Eat something</button>
+          {this.world.messageLog.map((row, index) => {
+            console.log(row.colour);
+            return (
+              <p key={index} style={{color: row.colour}}>{row.text}</p>
+            );
+          })}
         </div>
+        {this.person.alive ? (
+          <div>
+            <button onClick={this.eatSomethingClicked.bind(this)}>Eat Something</button>
+          </div>
+        ) : (
+          <div>
+            You are Dead.
+            {this.sublevel === 1 ? (
+              <p>Perhaps you should try eating something that is alive?</p>
+            ) : ''}
+            <button onClick={this.tryAgainClicked.bind(this)}>Try Again</button>
+          </div>
+        )}
       </div>
     );
   }
