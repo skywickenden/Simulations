@@ -8,15 +8,16 @@ export default class Needs {
 
   energy = null;
 
-  constructor(world, person) {
+  constructor(world, person, initialEnergy) {
     this.world = world;
     this.person = person;
-    this.constructNeeds();
+    this.constructNeeds(initialEnergy);
     // this.tickTock();
   }
 
-  constructNeeds() {
-    this.energy = new Energy(this.world, this.person);
+  constructNeeds(initialEnergy) {
+    console.log('Need', initialEnergy);
+    this.energy = new Energy(this.world, this.person, initialEnergy);
   }
 
   // tickTock() {

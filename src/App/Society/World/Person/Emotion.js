@@ -1,6 +1,6 @@
 
-import Contemplation from './Emotion/Contemplation';
-import Hunger from './Emotion/Hunger';
+import Contemplation from './Emotions/Contemplation';
+import Hunger from './Emotions/Hunger';
 
 export default class Emotion {
 
@@ -41,6 +41,7 @@ export default class Emotion {
   findHighest() {
     let highest = this.contemplation;
     if (this.hunger.value > highest.value) highest = this.hunger;
+
     return highest;
   }
 

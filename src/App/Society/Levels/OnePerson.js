@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
-import './Individual.css';
+import './OnePerson.css';
 
-import World from './World';
+import World from '../World/World';
 
-export default class Individual extends Component {
+export default class OnePerson extends Component {
 
   clockSpeed = 10;
   clockModifier = 10; // Update the display at a slower pace than the main clock.
+  initialPersonEnergy = 300;
 
   world = null;
   individual = null;
@@ -18,7 +19,7 @@ export default class Individual extends Component {
   };
 
   componentWillMount() {
-    this.world = new World(this.clockSpeed);
+    this.world = new World(this.clockSpeed, this.initialPersonEnergy);
     this.setState({activity: this.world.people[0].activity.name})
     this.tickTock();
   }
@@ -38,6 +39,12 @@ export default class Individual extends Component {
     }, this.clockSpeed * this.clockModifier);
   }
 
+  onEatSomething() {
+    if(this.world.people[0]) {
+      this.world.people[0].activity.engageActivity('eatEnvironment');
+    }
+  }
+
   render() {
     return (
       <div className="individual">
@@ -53,6 +60,10 @@ export default class Individual extends Component {
 
         <div>
           Energy: {this.state.energyQuantity}
+        </div>
+
+        <div>
+          <button onClick={this.onEatSomething.bind(this)}>Eat something</button>
         </div>
       </div>
     );

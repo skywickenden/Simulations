@@ -17,9 +17,11 @@ export default class Energy {
     starving: 50,
   }
 
-  constructor(world, person) {
+  constructor(world, person, initialEnergy) {
+    console.log('needs initialEnergy', initialEnergy);
     this.world = world;
     this.person = person;
+    if (initialEnergy) this.quantity = initialEnergy;
     this.tickTock();
   }
 
@@ -31,7 +33,6 @@ export default class Energy {
       const quantity = this.quantity;
       const levels = this.levels;
       const hunger = this.person.emotion.hunger;
-
       if (quantity < 0) this.world.personDied(this.person.personIndex);
 
       if (quantity <= levels.plenty  && quantity > levels.peckish) {

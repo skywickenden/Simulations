@@ -21,8 +21,8 @@ export default class Home extends Component {
           </li>
 
           <li>
-            <Link to="individual">
-              Individual
+            <Link to="society">
+              Society
             </Link>
           </li>
         </ul>
