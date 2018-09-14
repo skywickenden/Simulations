@@ -5,6 +5,8 @@ import { BrowserRouter, Match ,Miss, Link } from 'react-router';
 import CoincidenceOfWants from './CoincidenceOfWants/CoincidenceOfWants';
 import DaisyWorld from './DaisyWorld/DaisyWorld';
 import Society from './Society/Society';
+import Tribe from './Tribe/Tribe';
+import People from './People/People';
 import Home from './Home/Home';
 import NotFound from './NotFound/NotFound';
 
@@ -26,6 +28,8 @@ export default class App extends Component {
           <Match exactly pattern="/conincidence-of-wants" component={CoincidenceOfWants} />
           <Match exactly pattern="/daisy-world" component={DaisyWorld} />
           <Match exactly pattern="/society" component={Society} />
+          <Match exactly pattern="/tribe" component={Tribe} />
+          <Match exactly pattern="/people" component={People} />
           <Match exactly pattern="/" component={Home} />
           <Miss component={NotFound}/>
 
