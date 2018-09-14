@@ -3,9 +3,25 @@ import React, { Component } from 'react';
 import gaussian from './../../libraries/gaussian';
 import random from './../../libraries/random';
 
+import Land from './Land';
+
 import './People.css';
 
 export default class People extends Component {
+
+  tribeLand;
+  config = {
+    land: {
+      landWidth: 20,
+      landHeight: 20,
+      land: [],
+      landWidthUnitPixels: 30,
+      landHeightUnitPixels: 30,
+      personRadius: 5,
+      landFoodPerTick: 1,
+      maxFoodLand: 20,
+    }
+  };
 
   people  = [];
   personCount = 0;
@@ -21,9 +37,7 @@ export default class People extends Component {
   };
   baseHunger = 500;
   maxFoodToForagePerPerson = 10;
-  maxFoodLand = 20;
   maxFoodCarried = 100;
-  landFoodPerTick = 1;
   normalWalkSpeed = 0.1; // In world units
   daysInYear = 360;
   daysInMonth = 30;
@@ -45,16 +59,7 @@ export default class People extends Component {
 
   tribes = [];
 
-  landCanvas = null;
-  landContext = null;
-  landWidth = 20;
-  landHeight = 20;
-  land = [];
-  landWidthUnitPixels = 30;
-  landHeightUnitPixels = 30;
-  personRadius = 5;
-
-  year= 0;
+  year = 0;
   day = 0;
   lastFrameDrawnTimestamp = 0;
   maxLoopsOnPeddleToTheMetal = 10;
@@ -68,12 +73,7 @@ export default class People extends Component {
   };
 
   componentWillMount() {
-    for (let x = 0; x <= this.landWidth; x++) {
-      this.land[x] = [];
-      for (let y = 0; y <= this.landHeight; y++) {
-        this.land[x][y] = this.maxFoodLand;
-      }
-    }
+    this.tribeLand = new Land(this.config.land);
 
     for (let i = 0; i <= this.initialPopulation; i++) {
       const person = this.createPerson();
@@ -105,8 +105,8 @@ export default class People extends Component {
       mother: null,
       children: [],
       position: {
-        x: random() * this.landWidth, // In world units, not pixels
-        y: random() * this.landWidth, // In world units, not pixels
+        x: random() * this.tribeLand.getLandWidth(), // In world units, not pixels
+        y: random() * this.tribeLand.getLandHeight(), // In world units, not pixels
       },
       walkDirection: null, // North, East, South, West
       walkSpeed: 0, // In world units
@@ -122,8 +122,7 @@ export default class People extends Component {
   }
 
   componentDidMount() {
-    this.landCanvas = document.getElementById('land');
-    this.landContext = this.landCanvas.getContext('2d');
+    this.tribeLand.setCanvas(document.getElementById('land'));
     this.tickTock();
   }
 
@@ -175,13 +174,13 @@ export default class People extends Component {
       let foodForaged = parseInt(this.maxFoodToForagePerPerson * person.traits.forageSkill, 10);
       const landX = parseInt(person.position.x, 10);
       const landY = parseInt(person.position.y, 10);
-      if (foodForaged > this.land[landX][landY]) {
-        foodForaged = this.land[landX][landY];
+      if (foodForaged > this.tribeLand.getCellFood(landX, landY)) {
+        foodForaged = this.tribeLand.getCellFood(landX, landY);
         person.enoughFoodForaged = false;
       } else {
         person.enoughFoodForaged = true;
       }
-      this.land[landX][landY] -= foodForaged;
+      this.tribeLand.removeFoodFromCell(landX, landY, foodForaged);
       person.food += foodForaged;
       person.energy -= this.energyToForage;
     }
@@ -250,10 +249,14 @@ export default class People extends Component {
       }
 
       // loop the persons position on the canvas from left to right and top to bottom.
-      if (person.position.y < 0) person.position.y += this.landHeight;
-      if (person.position.y > this.landHeight) person.position.y -= this.landHeight;
-      if (person.position.x < 0) person.position.x += this.landWidth;
-      if (person.position.x > this.landWidth) person.position.x -= this.landWidth;
+      if (person.position.y < 0) person.position.y += this.tribeLand.getLandHeight();
+      if (person.position.y > this.tribeLand.getLandHeight()) {
+        person.position.y -= this.tribeLand.getLandHeight();
+      }
+      if (person.position.x < 0) person.position.x += this.tribeLand.getLandWidth();
+      if (person.position.x > this.tribeLand.getLandWidth()) {
+        person.position.x -= this.tribeLand.getLandWidth();
+      }
     }
   }
 
@@ -262,15 +265,6 @@ export default class People extends Component {
       person.age += 1;
       if (person.age >= this.ageAtDeath) {
         this.timeToDie(person, index);
-      }
-    }
-  }
-
-  foodGrows() {
-    for (let y = 0; y < this.landHeight; y++) {
-      for (let x = 0; x < this.landWidth; x++) {
-        this.land[x][y] += this.landFoodPerTick;
-        if (this.land[x][y] > this.maxFoodLand) this.land[x][y] = this.maxFoodLand;
       }
     }
   }
@@ -431,43 +425,6 @@ export default class People extends Component {
     // @todo use relationships to take food.
   }
 
-  drawLand() {
-    this.landContext.fillStyle = 'rgb(200, 200, 0)';
-    this.landContext.fillRect(
-      0,
-      0,
-      this.landWidth * this.landWidthUnitPixels,
-      this.landHeight * this.landHeightUnitPixels
-    );
-    for (let y = 0; y < this.landHeight; y++) {
-      for (let x = 0; x < this.landWidth; x++) {
-        const startX = x * this.landWidthUnitPixels + 1;
-        const endX = this.landWidthUnitPixels - 1;
-        const startY = y * this.landHeightUnitPixels + 1;
-        const endY = this.landHeightUnitPixels - 1;
-        let green = parseInt(this.land[x][y] / this.maxFoodLand * 255, 10);
-        if (green > 255) green  = 255;
-        this.landContext.fillStyle =  `rgb(0, ${green}, 0)`;
-        this.landContext.fillRect(startX, startY, endX, endY);
-      }
-    }
-
-    this.people.forEach((person) => {
-      const x = parseInt(person.position.x * this.landWidthUnitPixels, 10);
-      const y = parseInt(person.position.y * this.landHeightUnitPixels, 10);
-
-      this.landContext.beginPath();
-      // this.landContext.strokeStyle = 'rgb(0, 0, 155)';
-      this.landContext.fillStyle = 'rgb(100, 100, 255)';
-      if (this.state.showPersonDetails.id === person.id) {
-        this.landContext.fillStyle = 'rgb(255, 100, 100)';
-      }
-      this.landContext.arc(x, y, this.personRadius, 0, 2 * Math.PI, false);
-      this.landContext.fill();
-      this.landContext.closePath();
-    });
-  }
-
   oneDay() {
     let index = this.people.length - 1;
     while (index >= 0) {
@@ -487,7 +444,7 @@ export default class People extends Component {
       index -= 1;
     }
 
-    this.foodGrows();
+    this.tribeLand.growFood();
 
     if (this.day === this.daysInYear) {
       this.year++;
@@ -498,7 +455,7 @@ export default class People extends Component {
     if (Date.now() - this.state.msPerFrameDrawn > this.lastFrameDrawnTimestamp) {
       this.lastFrameDrawnTimestamp = Date.now();
       this.setState({itteration: this.state.itteration + 1});
-      this.drawLand();
+      this.tribeLand.drawLand(this.people, this.state.showPersonDetails.id);
     }
 
     if (this.state.clockSpeed === 0) {
@@ -534,35 +491,6 @@ export default class People extends Component {
 
   setFrameRedrawRate(rate) {
     this.setState({msPerFrameDrawn: rate});
-  }
-
-  landClicked(event) {
-    const rect = this.landCanvas.getBoundingClientRect();
-    const clickX = parseInt(event.clientX - rect.left, 10);
-    const clickY = parseInt(event.clientY - rect.top, 10);
-    this.people.forEach((person) => {
-      const personX = person.position.x * this.landWidthUnitPixels;
-      const personY = person.position.y * this.landHeightUnitPixels;
-
-      // quick check to see if in the person rectangle.
-      if (clickX > personX - this.personRadius
-        && clickX < personX + this.personRadius
-        && clickY > personY - this.personRadius
-        && clickY < personY + this.personRadius
-      ) {
-        // Now a more detailed check to make sure it is inside the circle.
-        this.landContext.beginPath();
-        this.landContext.fillStyle = 'rgb(0, 0, 155)';
-        this.landContext.arc(personX, personY, this.personRadius, 0, 2 * Math.PI, false);
-        this.landContext.fill();
-        const inPerson = this.landContext.isPointInPath(clickX, clickY);
-        this.landContext.closePath();
-        if (inPerson) {
-          this.setState({showPersonDetails: person});
-        }
-      }
-    });
-
   }
 
   render() {
@@ -616,9 +544,9 @@ export default class People extends Component {
         <canvas
           id="land"
           className="land"
-          width={this.landWidth * this.landWidthUnitPixels}
-          height={this.landHeight * this.landHeightUnitPixels}
-          onClick={this.landClicked.bind(this)}
+          width={this.tribeLand.getLandWidth() * this.tribeLand.getLandWidthUnitPixels()}
+          height={this.tribeLand.getLandHeight() * this.tribeLand.getLandHeightUnitPixels()}
+          onClick={this.tribeLand.landClicked.bind(this.tribeLand, this.people, this.openDetails.bind(this))}
           />
         <h4>People</h4>
         <div>
