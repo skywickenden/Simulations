@@ -5,96 +5,45 @@ export default class EatEnvironment {
   world = null;
   person = null;
   activity = null;
+  environment = null;
   shouldCycle = false;
   cycleCount = 0;
   maxCycleCount = 200;
   topExpereince = 2;
+  eatQuantity = 0.03;
 
-  allResources = [
-    {
-      name: 'dirt',
-      energy: 0,
-      level: 1,
-      expereince: 0,
-      message: `You eat some dirt. It's not really doing anything for you.`,
-    },
-    {
-      name: 'bark',
-      energy: 0,
-      level: 1,
-      expereince: 0,
-      message: `You eat some bark. It's a bit chewy.`,
-    },
-    {
-      name: 'pebbles',
-      energy: 0,
-      level: 1,
-      expereince: 0,
-      message: `You chew on some pebbles and crack a tooth.`,
-    },
-    {
-      name: 'mud',
-      energy: 0,
-      level: 1,
-      expereince: 0,
-      message: `You slurp up some mud. It tastes a bit plain.`,
-    },
+  activeResources = [];
+
+  comedyResources = [
     {
       name: 'foot',
       energy: 0,
       level: 1,
+      quantity: 0.04,
       expereince: 0,
       message: `You try eating your foot. Ouch. Nope, that hurts as much as your hand did.`,
-    },
-    {
-      name: 'resin',
-      energy: 0,
-      level: 1,
-      expereince: 0,
-      message: `You chow down on some tree resin. Hmmm mmmMM mmm ARGGMM.`,
-    },
-    {
-      name: 'poo',
-      energy: 0,
-      level: 1,
-      expereince: 0,
-      message: `You eat some poo that an animal left behind. Your breath smells.`,
-    },
-    {
-      name: 'dead leaf',
-      energy: 1,
-      level: 2,
-      expereince: 0,
-      message: `You eat a dead leaf. It crunches to dust in your mouth and makes your throat dry.`,
-    },
-    {
-      name: 'grass',
-      energy: 1,
-      level: 2,
-      expereince: 0,
-      message: `You eat a buch of grass. It takes a lot chewing. You don't seem to get much from it.`,
-    },
-    {
-      name: 'tree root',
-      energy: 1,
-      level: 2,
-      expereince: 0,
-      message: `You eat a small tree root. It is very stringy and makes you retch when it tickles your tonsels.`,
-    },
+    }
   ];
 
-  activeResources = [];
-
   constructor(world, person, activity) {
+    console.log('eat constructor');
     this.world = world;
     this.person = person;
     this.activity = activity;
+    this.environment = this.world.getCell(this.person.location);
     this.activateInitialResources();
   }
 
   activateInitialResources() {
-    this.allResources.forEach((resource) => {
-      if (resource.level === 1) this.activeResources.push({ ...resource });
+    console.log(this.environment);
+    console.log(this.environment.resources);
+    this.environment.resources.forEach((resource) => {
+      if (resource.level === 1) this.activeResources.push(resource);
+    });
+
+    // Comedy resource....
+    this.comedyResources.forEach((resource) => {
+      this.activeResources.push(resource);
     });
   }
 
@@ -112,23 +61,55 @@ export default class EatEnvironment {
     }, this.clockSpeed);
   }
 
+  isResourceComedy(resource) {
+    const found = this.comedyResources.find((comedyResource) => {
+      return comedyResource.name === resource.name;
+    });
+     return found === undefined ? false : true;
+  }
+
+  eatComedyResource(resource) {
+    console.log('eatComedyResource', resource.quantity);
+    if (resource.quantity < this.eatQuantity) {
+      return false;
+    } else {
+      resource.quantity -= this.eatQuantity;
+      return true;
+    }
+  }
+
   engage() {
     console.log('Eating');
     this.activity.setActivityName('Eating');
     if (this.activeResources.length > 0) {
       const randomIndex = Math.floor(random(this.world.seed) * this.activeResources.length);
       const resource = this.activeResources[randomIndex];
+
+      let eaten = false;
+      if (this.isResourceComedy(resource)) {
+        eaten = this.eatComedyResource(resource);
+      } else {
+        eaten = this.environment.useResource(resource, this.eatQuantity);
+      }
+      // @todo grow the current persons forage expereince for this item.
+      //this.person.expereince.forage
+
       let messageColour = 'green';
       if (resource.energy <= 0) messageColour = 'red';
-      this.world.appendMessage(resource.message, messageColour);
+      let message = resource.message;
+      if (eaten === false) {
+        message = `You tried to eat some ${resource.name} but could not find any`;
+        messageColour = 'red';
+      }
+      this.world.appendMessage(message, messageColour);
 
-      if (this.world.experience.forage.level > 0) {
-        resource.expereince += this.world.experience.forage.level;
+      if (this.world.playerExperience.forage.level > 0) {
+        resource.expereince += this.world.playerExperience.forage.level;
         if (resource.expereince > this.topExpereince) {
           this.activeResources.splice(randomIndex, 1);
         }
       }
-      console.log(this.world.experience.forage.level);
+      console.log(this.world.playerExperience.forage.level);
     } else {
       this.world.appendMessage('The is nothing here to eat.', 'red');
     }

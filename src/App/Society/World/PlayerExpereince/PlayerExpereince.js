@@ -1,6 +1,6 @@
 import Forage from './Forage';
 
-export default class Expereince {
+export default class PlayerExpereince {
 
   world = null;
 

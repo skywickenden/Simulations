@@ -1,5 +1,6 @@
 import Need from './Need';
 import Emotion from './Emotion';
+import Experience from './Experience';
 import Activity from './Activity';
 
 export default class Person {
@@ -8,6 +9,7 @@ export default class Person {
   personIndex = null;
   need = null;
   emotion = null;
+  expereince = null;
   activity = null;
   environment = null;
   initialEnergy = 0;
@@ -25,6 +27,7 @@ export default class Person {
     this.environment = world.getCell(location).environemnt;
     this.needs = new Need(world, this, initialEnergy);
     this.emotion = new Emotion(world, this);
+    this.experience = new Experience(world, this);
     this.activity = new Activity(world, this);
   }
 
