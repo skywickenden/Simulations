@@ -1,11 +1,11 @@
 import Person from './Person/Person';
-import Expereince from './Expereince/Expereince';
+import PlayerExpereince from './PlayerExpereince/PlayerExpereince';
 
 import Savanah from './Environments/Savanah';
 
 export default class World {
 
-  expereince = null
+  playerExperience = null
   people = [];
   clockSpeed = null;
   messageLog = [];
@@ -16,7 +16,7 @@ export default class World {
   constructor(clockSpeed, initialPersonEnergy, initialPeopleQuantity) {
     this.clockSpeed = clockSpeed;
     this.tmpEnvironment = new Savanah(this);
-    this.experience = new Expereince();
+    this.playerExperience = new PlayerExpereince();
     for (let i = 0; i < initialPeopleQuantity; i++) {
       console.log('people ', i);
       this.people.push(new Person(this, this.people.length, initialPersonEnergy));
@@ -35,6 +35,7 @@ export default class World {
   }
 
   // Stub until we have a world!
+  // Note. Each location is aprox one acer (64x64m) (this is 36.48 billion cells in the worlsd)
   getCell(location) {
     console.log(this.tmpEnvironment);
     return(this.tmpEnvironment);
