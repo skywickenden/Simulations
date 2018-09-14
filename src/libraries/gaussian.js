@@ -2,7 +2,7 @@
 import random from './random';
 
 // from http://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
-export default function gaussian(mean, stdev) {
+export default function gaussian(mean, stdev, min = -Math.infinity, max = Math.infinity) {
     var y2;
     var use_last = false;
     return function() {
@@ -26,8 +26,11 @@ export default function gaussian(mean, stdev) {
 
        var retval = mean + stdev * y1;
 
-       if(retval > 0)
-           return retval;
-       return -retval;
+       if (retval < min) retval = min;
+       if (retval > max) retval = max;
+
+       if(retval < 0) retval = -retval;
+
+       return retval;
    }
 }
