@@ -55,6 +55,10 @@ export default class Land {
     return this.land[x][y];
   }
 
+  getPersonRadius() {
+    return this.personRadius;
+  }
+
   removeFoodFromCell(x, y, quantity) {
     this.land[x][y] -= quantity;
   }
@@ -68,7 +72,7 @@ export default class Land {
     }
   }
 
-  drawLand(people, showPersonDetailsId) { // this.state.showPersonDetails.id
+  drawLand(people, showPersonDetailsId, showChildId) { // this.state.showPersonDetails.id
     this.landContext.fillStyle = 'rgb(200, 200, 0)';
     this.landContext.fillRect(
       0,
@@ -99,6 +103,9 @@ export default class Land {
       if (showPersonDetailsId === person.id) {
         this.landContext.fillStyle = 'rgb(255, 100, 100)';
       }
+      if (showChildId === person.id) {
+        this.landContext.fillStyle = 'rgb(255, 200, 150)';
+      }
       this.landContext.arc(x, y, this.personRadius, 0, 2 * Math.PI, false);
       this.landContext.fill();
       this.landContext.closePath();
@@ -106,7 +113,6 @@ export default class Land {
   }
 
   landClicked(people, openDetails, event) {
-    console.log(people);
     const rect = this.landCanvas.getBoundingClientRect();
     const clickX = parseInt(event.clientX - rect.left, 10);
     const clickY = parseInt(event.clientY - rect.top, 10);

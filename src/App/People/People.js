@@ -69,6 +69,7 @@ export default class People extends Component {
     clockSpeed: 1000,
     itteration: 0,
     showPersonDetails: false,
+    showChild: false,
     msPerFrameDrawn: 100,
   };
 
@@ -112,8 +113,8 @@ export default class People extends Component {
       walkSpeed: 0, // In world units
       walkStepQuantity: 0,
       traits: {
-        feelsHunger: startingGuassian(),
-        forageSkill: startingGuassian(),
+        feelsHunger: 0.5,// startingGuassian(),
+        forageSkill: 0.5, // startingGuassian(),
       },
     };
     this.personCount += 1;
@@ -404,12 +405,28 @@ export default class People extends Component {
     }
   }
 
+  findNewPointFromAngle(x, y, angle, distance) {
+      var result = {};
+      result.x = Math.round(Math.cos(angle * Math.PI / 180) * distance + x);
+      result.y = Math.round(Math.sin(angle * Math.PI / 180) * distance + y);
+
+      return result;
+  }
+
   giveBirth(person) {
     person.pregnant = false;
     person.energy -= this.energyToBirth;
     const newPerson = this.createPerson(this.people.length - 1);
-    newPerson.position.x = person.position.x;
-    newPerson.position.y = person.position.y;
+    const randomAngle = parseInt(random() * 360, 10);
+    const distanceFromMother = (this.tribeLand.getPersonRadius() * 2) + parseInt(random() * 5, 10);
+    const newPoint = this.findNewPointFromAngle(
+      person.position.x * this.tribeLand.getLandWidthUnitPixels(),
+      person.position.y * this.tribeLand.getLandHeightUnitPixels(),
+      randomAngle,
+      distanceFromMother
+    );
+    newPerson.position.x = newPoint.x / this.tribeLand.getLandWidthUnitPixels();
+    newPerson.position.y = newPoint.y / this.tribeLand.getLandHeightUnitPixels();
     newPerson.age = 0;
     newPerson.fertile = false;
     this.people.push(newPerson);
@@ -455,7 +472,7 @@ export default class People extends Component {
     if (Date.now() - this.state.msPerFrameDrawn > this.lastFrameDrawnTimestamp) {
       this.lastFrameDrawnTimestamp = Date.now();
       this.setState({itteration: this.state.itteration + 1});
-      this.tribeLand.drawLand(this.people, this.state.showPersonDetails.id);
+      this.tribeLand.drawLand(this.people, this.state.showPersonDetails.id, this.state.showChild.id);
     }
 
     if (this.state.clockSpeed === 0) {
@@ -482,11 +499,18 @@ export default class People extends Component {
   }
 
   closeDetailsClicked() {
-    this.setState({showPersonDetails: false});
+    this.setState({
+      showPersonDetails: false,
+      showChild: false,
+    });
   }
 
   openDetails(person) {
     this.setState({showPersonDetails: person});
+  }
+
+  childClicked(child) {
+    this.setState({showChild: child});
   }
 
   setFrameRedrawRate(rate) {
@@ -502,7 +526,8 @@ export default class People extends Component {
             <button className="close" onClick={this.closeDetailsClicked.bind(this)}>X</button>
             <div>Name: {personDetails.name}</div>
             <div className="attributes">
-              <div>Sex:  </div>
+              <div>Sex:  {personDetails.sex}</div>
+              <div>Age:  {personDetails.age}</div>
               <div>Fertility rate {personDetails.fertilityRate}</div>
               <div>Mate {personDetails.mate ? personDetails.mate.name : 'none'}</div>
               <div>Pregnant {personDetails.pregnant}</div>
@@ -530,7 +555,7 @@ export default class People extends Component {
                   <li key={index}>
                     <div
                       className="personOpener"
-                      onClick={this.openDetails.bind(this, child)}>
+                      onClick={this.childClicked.bind(this, child)}>
                       {child.name}
                     </div>
                   </li>
