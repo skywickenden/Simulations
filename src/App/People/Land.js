@@ -52,7 +52,7 @@ export default class Land {
   }
 
   getCellFood(x, y) {
-    return this.land[x][y];
+    return (this.land[x] && this.land[x][y]) ? this.land[x][y] : 0;
   }
 
   getPersonRadius() {
@@ -60,7 +60,9 @@ export default class Land {
   }
 
   removeFoodFromCell(x, y, quantity) {
-    this.land[x][y] -= quantity;
+    if (this.land[x] && this.land[x][y]) {
+      this.land[x][y] -= quantity;
+    }
   }
 
   growFood() {
@@ -72,7 +74,7 @@ export default class Land {
     }
   }
 
-  drawLand(people, showPersonDetailsId, showChildId) { // this.state.showPersonDetails.id
+  drawLand(people, showPersonDetails, showChild, pubertyAge) { // this.state.showPersonDetails.id
     this.landContext.fillStyle = 'rgb(200, 200, 0)';
     this.landContext.fillRect(
       0,
@@ -100,11 +102,17 @@ export default class Land {
       this.landContext.beginPath();
       // this.landContext.strokeStyle = 'rgb(0, 0, 155)';
       this.landContext.fillStyle = 'rgb(100, 100, 255)';
-      if (showPersonDetailsId === person.id) {
-        this.landContext.fillStyle = 'rgb(255, 100, 100)';
+      if (person.mate && person.mate.id === showPersonDetails.id) {
+        this.landContext.fillStyle = 'rgb(170, 0, 255)';
       }
-      if (showChildId === person.id) {
-        this.landContext.fillStyle = 'rgb(255, 200, 150)';
+      if (person.age < pubertyAge) {
+        this.landContext.fillStyle = 'rgb(170, 170, 255)';
+      }
+      if (showPersonDetails.id === person.id) {
+        this.landContext.fillStyle = 'rgb(255, 100, 0)';
+      }
+      if (showChild.id === person.id) {
+        this.landContext.fillStyle = 'rgb(255, 255, 0)';
       }
       this.landContext.arc(x, y, this.personRadius, 0, 2 * Math.PI, false);
       this.landContext.fill();
