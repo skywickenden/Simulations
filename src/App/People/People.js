@@ -65,8 +65,7 @@ export default class People extends Component {
   maxLoopsOnPeddleToTheMetal = 10;
   peddleToTheMetalCount = 0;
 
-  widthIndex = [];
-  heightIndex = [];
+  peopleIndex = [];
 
   state = {
     clockSpeed: 1000,
@@ -79,11 +78,11 @@ export default class People extends Component {
   componentWillMount() {
     this.tribeLand = new Land(this.config.land);
 
-    for (let i = 0; i < this.tribeLand.getLandWidth(); i++) {
-      this.widthIndex[i] = [];
-    }
-    for (let i = 0; i < this.tribeLand.getLandHeight(); i++) {
-      this.heightIndex[i] = [];
+    for (let x = 0; x < this.tribeLand.getLandWidth(); x++) {
+      this.peopleIndex[x] = [];
+      for (let y = 0; y < this.tribeLand.getLandHeight(); y++) {
+        this.peopleIndex[x][y] = [];
+      }
     }
 
     for (let i = 0; i <= this.initialPopulation; i++) {
@@ -127,9 +126,7 @@ export default class People extends Component {
         forageSkill: 0.5, // startingGuassian(),
       },
     };
-    console.log('person.position.x',person.position.x);
-    this.widthIndex[parseInt(person.position.x, 10)].push(person.id);
-    this.heightIndex[parseInt(person.position.y, 10)].push(person.id);
+    this.peopleIndex[parseInt(person.position.x, 10)][parseInt(person.position.y, 10)].push(person.id);
     this.personCount += 1;
     this.isFertile(person);
     return person;
@@ -212,7 +209,6 @@ export default class People extends Component {
           parentWithMost = person.father;
         }
       }
-      if (person.id == 508) {console.log(person.name, parentWithMost.food);}
       if (parentWithMost && parentWithMost.food > this.minParentFood) {
         parentWithMost.food -= 1;
         person.food += 1;
@@ -426,6 +422,55 @@ export default class People extends Component {
     }
   }
 
+  socialiseLocal(person, distance) {
+    const localPeople = this.findLocalPeople(person, distance);
+  }
+
+  findLocalPeople(person, distance) {
+    const localPeople = [];
+    const squaresDone = [];
+
+    const findPeopleInNextSquare = (thisX, thisY, steps) => {
+      if (squaresDone[thisX] && squaresDone[thisX][thisY]) return;
+
+      if (this.peopleIndex[thisX] === undefined || this.peopleIndex[thisX][thisY] === undefined) console.log(person.id, thisX, thisY, person.position.y);
+      this.peopleIndex[thisX][thisY].forEach((personId) => {
+        localPeople.push(personId);
+      });
+
+      if (steps + 1 <= distance) {
+        let nextX;
+        let nextY;
+        nextX = thisX - 1;
+        if (nextX < 0) nextX = this.tribeLand.getLandWidth() - 1;
+        nextY = thisY;
+        findPeopleInNextSquare(nextX, nextY, steps + 1);
+        nextX = thisX + 1;
+        if (nextX => this.tribeLand.getLandWidth()) nextX = 0
+        nextY = thisY;
+        findPeopleInNextSquare(nextX, nextY, steps + 1);
+        nextX = thisX;
+        nextY = thisY - 1;
+        if (nextY < 0) nextY = this.tribeLand.getLandHeight() - 1;
+        findPeopleInNextSquare(nextX, nextY, steps + 1);
+        nextX = thisX;
+        nextY = thisY + 1;
+        if (nextY => this.tribeLand.getLandHeight()) nextY = 0;
+        findPeopleInNextSquare(nextX, nextY, steps + 1);
+      }
+
+      if (!squaresDone[thisX]) {
+        squaresDone[thisX] = [];
+      }
+      if (!squaresDone[thisX][thisY]) {
+        squaresDone[thisX][thisY] = true;
+      }
+      return;
+    }
+    findPeopleInNextSquare(parseInt(person.position.x, 10), parseInt(person.position.y, 10), 1);
+    // if (person.id === 29) console.log(person.id, localPeople);
+  }
+
   progressPregnancy(person) {
     if (person.pregnant) {
       person.pregnant -= 1;
@@ -458,6 +503,9 @@ export default class People extends Component {
     );
     newPerson.position.x = newPoint.x / this.tribeLand.getLandWidthUnitPixels();
     newPerson.position.y = newPoint.y / this.tribeLand.getLandHeightUnitPixels();
+    if (newPerson.position.x >= 20) newPerson.position.x = newPerson.position.x - 20;
+    if (newPerson.position.y >= 20) newPerson.position.y = newPerson.position.y - 20;
+    console.log('newPerson.position.x', newPerson.id, newPerson.position.x, newPerson.position.y);
 
     newPerson.age = 0;
     newPerson.fertile = false;
@@ -470,30 +518,24 @@ export default class People extends Component {
   }
 
   removePositionIndex(person) {
-  if (parseInt(person.position.x, 10) >= 0 && parseInt(person.position.x, 10) < 20) {
-      this.widthIndex[parseInt(person.position.x, 10)].splice(
-        this.widthIndex[parseInt(person.position.x, 10)].indexOf(person.id),
-        1
-      );
-    }
-    if (parseInt(person.position.y, 10) >= 0 && parseInt(person.position.y, 10) < 20) {
-      this.heightIndex[parseInt(person.position.y, 10)].splice(
-        this.heightIndex[parseInt(person.position.y, 10)].indexOf(person.id),
-        1
-      );
+
+    if (parseInt(person.position.x, 10) >= 0 && parseInt(person.position.x, 10) < 20) {
+      if (parseInt(person.position.y, 10) >= 0 && parseInt(person.position.y, 10) < 20) {
+        const indexReference = this.peopleIndex[parseInt(person.position.x, 10)][parseInt(person.position.y, 10)];
+        if (indexReference.indexOf(person.id) > -1) {
+          indexReference.splice(indexReference.indexOf(person.id), 1);
+        }
+      }
     }
   }
 
   insertPositionIndex(person) {
 
-    if (parseInt(person.position.y, 10) < 0 || parseInt(person.position.y, 10) >= 20) {
-      console.log(person);
-    }
     if (parseInt(person.position.x, 10) >= 0 && parseInt(person.position.x, 10) < 20) {
-      this.widthIndex[parseInt(person.position.x, 10)].push(person.id);
-    }
-    if (parseInt(person.position.y, 10) >= 0 && parseInt(person.position.y, 10) < 20) {
-      this.heightIndex[parseInt(person.position.y, 10)].push(person.id);
+      if (parseInt(person.position.y, 10) >= 0 && parseInt(person.position.y, 10) < 20) {
+        const indexReference = this.peopleIndex[parseInt(person.position.x, 10)][parseInt(person.position.y, 10)];
+        indexReference.push(person.id);
+      }
     }
   }
 
@@ -509,6 +551,7 @@ export default class People extends Component {
       person.energy -= this.energyToBreathForADay;
 
       this.isItTimeToForage(person);
+      this.findLocalPeople(person, 3);
       this.isItTimeToWalkabout(person);
       this.ifStarving(person);
       this.isItTimeToDie(person, index);
@@ -584,7 +627,6 @@ export default class People extends Component {
 
   render() {
     const personDetails = this.state.showPersonDetails;
-    console.log(this.widthIndex, this.heightIndex);
     return (
       <div className="people">
         {this.state.showPersonDetails ? (
@@ -643,7 +685,7 @@ export default class People extends Component {
               <ul>
                 {Object.keys(personDetails.relationships).map((relationshipPersonId) => {
                   const relationship = personDetails.relationships[relationshipPersonId];
-                  console.log(relationship);
+                  // console.log(relationship);
                   return ('');
                 })}
               </ul>
