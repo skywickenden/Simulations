@@ -30,7 +30,7 @@ export default class People extends Component {
       landFoodPerTick: 1,
       maxFoodLand: 20,
     },
-    initialPopulation: 80,
+    initialPopulation: 300,
     baseHunger: 500,
     maxFoodToForagePerPerson: 10,
     maxFoodCarried: 100,
@@ -51,7 +51,7 @@ export default class People extends Component {
     potentialMateBecomesMate: 100,
     energyToBirth: 200,
     ageAtDeath: 60,
-    spawnMinimum: 80,
+    spawnMinimum: 300,
     localDistance: 2,
   };
 
@@ -122,55 +122,60 @@ export default class People extends Component {
   }
 
   oneDay() {
-    let index = 0;
-    while (index <= this.people.length - 1) {
-      const person = this.people[index];
-      person.energy -= this.config.energyToBreathForADay;
+    if (!this.state.pause) {
 
-      isItTimeToForage(person, this.config, this.tribeLand);
-      // findLocalPeople(person, 3, this.peopleIndex, this.tribeLand);
-      isItTimeToWalkabout(person, this.config, this.peopleIndex, this.tribeLand);
-      isItTimeToDie(person, index, this.people, this.peopleIndex, this.personCount);
+      let index = 0;
+      while (index <= this.people.length - 1) {
+        const person = this.people[index];
+        person.energy -= this.config.energyToBreathForADay;
 
-      isBirthday(person, index, this.config, this.dayCount, this.people, this.peopleIndex, this.personCount);
-      // socialise(person, index, this.config, this.people);
-      // haveSex(person, this.config, this.dayCount);
-      // progressPregnancy(
-      //   person,
-      //   this.config,
-      //   this.personCount,
-      //   this.activities,
-      //   this.health,
-      //   this.tribeLand,
-      //   this.peopleIndex,
-      //   this.dayCount,
-      //   this.people
-      // );
+        isItTimeToForage(person, this.config, this.tribeLand);
+        // findLocalPeople(person, 3, this.peopleIndex, this.tribeLand);
+        isItTimeToWalkabout(person, this.config, this.peopleIndex, this.tribeLand);
+        isItTimeToDie(person, index, this.people, this.peopleIndex);
 
-      index += 1;
+        isBirthday(person, index, this.config, this.dayCount, this.people, this.peopleIndex, this.personCount);
+        // socialise(person, index, this.config, this.people);
+        // haveSex(person, this.config, this.dayCount);
+        // progressPregnancy(
+        //   person,
+        //   this.config,
+        //   this.personCount,
+        //   this.activities,
+        //   this.health,
+        //   this.tribeLand,
+        //   this.peopleIndex,
+        //   this.dayCount,
+        //   this.people
+        // );
+
+        index += 1;
+      }
+
+      spawn(
+        this.personCount,
+        this.config,
+        this.activities,
+        this.health,
+        this.tribeLand,
+        this.peopleIndex,
+        this.dayCount,
+        this.people
+      );
+
+      indexLocalPeople(this.pepole, this.config, this.localIndex, this.peopleIndex, this.tribeLand);
+
+      this.tribeLand.growFood();
+
+      if (this.dayCount === this.config.daysInYear) {
+        this.yearCount++;
+        this.dayCount = 0;
+      } else {
+        this.dayCount++;
+      }
+
     }
 
-    indexLocalPeople(this.pepole, this.config, this.localIndex, this.peopleIndex, this.tribeLand);
-
-    spawn(
-      this.personCount,
-      this.config,
-      this.activities,
-      this.health,
-      this.tribeLand,
-      this.peopleIndex,
-      this.dayCount,
-      this.people
-    );
-
-    this.tribeLand.growFood();
-
-    if (this.dayCount === this.config.daysInYear) {
-      this.yearCount++;
-      this.dayCount = 0;
-    } else {
-      this.dayCount++;
-    }
     if (Date.now() - this.state.msPerFrameDrawn > this.lastFrameDrawnTimestamp) {
       this.lastFrameDrawnTimestamp = Date.now();
       this.setState({itteration: this.state.itteration + 1});
@@ -185,7 +190,7 @@ export default class People extends Component {
       );
     }
 
-    if (this.state.clockSpeed === 0) {
+    if (this.state.clockSpeed === 0 && !this.state.pause) {
       this.peddleToTheMetalCount++;
       if (this.peddleToTheMetalCount > this.maxLoopsOnPeddleToTheMetal) {
         this.peddleToTheMetalCount = 0;
@@ -200,11 +205,7 @@ export default class People extends Component {
 
   tickTock() {
     setTimeout(() => {
-      if (!this.state.pause) {
-        this.oneDay();
-      } else {
-        this.tickTock();
-      }
+      this.oneDay();
     }, this.state.clockSpeed);
   }
 

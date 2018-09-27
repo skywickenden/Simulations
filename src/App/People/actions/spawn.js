@@ -5,7 +5,7 @@ import createPerson from './createPerson';
 export default function spawn(personCount, config, activities, health, tribeLand,
   peopleIndex, dayCount, people
 ) {
-  while (personCount.count < config.spawnMinimum) {
+  while (people.length < config.spawnMinimum) {
     const person = createPerson(
       personCount,
       config,
