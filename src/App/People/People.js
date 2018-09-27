@@ -4,6 +4,7 @@ import Land from './Land';
 
 import createPerson from './actions/createPerson';
 import findLocalPeople from './actions/findLocalPeople';
+import fight from './actions/fight';
 import haveSex from './actions/haveSex';
 import isBirthday from './actions/isBirthday';
 import indexLocalPeople from './actions/indexLocalPeople';
@@ -21,8 +22,8 @@ export default class People extends Component {
 
   config = {
     land: {
-      landWidth: 10,
-      landHeight: 10,
+      landWidth: 3,
+      landHeight: 3,
       land: [],
       landWidthUnitPixels: 30,
       landHeightUnitPixels: 30,
@@ -30,7 +31,7 @@ export default class People extends Component {
       landFoodPerTick: 1,
       maxFoodLand: 20,
     },
-    initialPopulation: 300,
+    initialPopulation: 10,
     baseHunger: 500,
     maxFoodToForagePerPerson: 10,
     maxFoodCarried: 100,
@@ -51,8 +52,9 @@ export default class People extends Component {
     potentialMateBecomesMate: 100,
     energyToBirth: 200,
     ageAtDeath: 60,
-    spawnMinimum: 300,
+    spawnMinimum: 10,
     localDistance: 2,
+    foodShortage: 10,
   };
 
   tribeLand;
@@ -164,6 +166,8 @@ export default class People extends Component {
       );
 
       indexLocalPeople(this.pepole, this.config, this.localIndex, this.peopleIndex, this.tribeLand);
+
+      fight(this.people, this.localIndex, this.tribeLand, this.config);
 
       this.tribeLand.growFood();
 
