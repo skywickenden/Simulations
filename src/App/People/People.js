@@ -4,14 +4,16 @@ import Land from './Land';
 
 import createPerson from './actions/createPerson';
 import findLocalPeople from './actions/findLocalPeople';
-import giveBirth from './actions/giveBirth';
 import haveSex from './actions/haveSex';
 import isBirthday from './actions/isBirthday';
+import indexLocalPeople from './actions/indexLocalPeople';
 import isItTimeToDie from './actions/isItTimeToDie';
 import isItTimeToForage from './actions/isItTimeToForage';
 import isItTimeToWalkabout from './actions/isItTimeToWalkabout';
 import progressPregnancy from './actions/progressPregnancy';
 import socialise from './actions/socialise';
+import spawn from './actions/spawn';
+
 
 import './People.css';
 
@@ -19,8 +21,8 @@ export default class People extends Component {
 
   config = {
     land: {
-      landWidth: 20,
-      landHeight: 20,
+      landWidth: 10,
+      landHeight: 10,
       land: [],
       landWidthUnitPixels: 30,
       landHeightUnitPixels: 30,
@@ -28,7 +30,7 @@ export default class People extends Component {
       landFoodPerTick: 1,
       maxFoodLand: 20,
     },
-    initialPopulation: 100,
+    initialPopulation: 80,
     baseHunger: 500,
     maxFoodToForagePerPerson: 10,
     maxFoodCarried: 100,
@@ -49,11 +51,13 @@ export default class People extends Component {
     potentialMateBecomesMate: 100,
     energyToBirth: 200,
     ageAtDeath: 60,
+    spawnMinimum: 80,
+    localDistance: 2,
   };
 
   tribeLand;
   people  = [];
-  personCount = 0;
+  personCount = { count: 0}; // stored in object to make it easy to pass by reference.
   activities = [
     'resting',
     'socialising',
@@ -73,13 +77,17 @@ export default class People extends Component {
   peddleToTheMetalCount = 0;
 
   peopleIndex = [];
+  localIndex = [];
 
   state = {
     clockSpeed: 1000,
+    pause: false,
     itteration: 0,
     showPersonDetails: false,
     showChild: false,
     msPerFrameDrawn: 100,
+    landSelectedX: null,
+    landSelectedY: null,
   };
 
   componentWillMount() {
@@ -87,8 +95,10 @@ export default class People extends Component {
 
     for (let x = 0; x < this.tribeLand.getLandWidth(); x++) {
       this.peopleIndex[x] = [];
+      this.localIndex[x] = [];
       for (let y = 0; y < this.tribeLand.getLandHeight(); y++) {
         this.peopleIndex[x][y] = [];
+        this.localIndex[x][y] = [];
       }
     }
 
@@ -118,27 +128,40 @@ export default class People extends Component {
       person.energy -= this.config.energyToBreathForADay;
 
       isItTimeToForage(person, this.config, this.tribeLand);
-      findLocalPeople(person, 3, this.peopleIndex, this.tribeLand);
+      // findLocalPeople(person, 3, this.peopleIndex, this.tribeLand);
       isItTimeToWalkabout(person, this.config, this.peopleIndex, this.tribeLand);
-      isItTimeToDie(person, index, this.people, this.peopleIndex);
+      isItTimeToDie(person, index, this.people, this.peopleIndex, this.personCount);
 
-      isBirthday(person, index, this.config, this.dayCount, this.people, this.peopleIndex);
-      socialise(person, index, this.config, this.people);
-      haveSex(person, this.config, this.dayCount);
-      progressPregnancy(
-        person,
-        this.config,
-        this.personCount,
-        this.activities,
-        this.health,
-        this.tribeLand,
-        this.peopleIndex,
-        this.dayCount,
-        this.people
-      );
+      isBirthday(person, index, this.config, this.dayCount, this.people, this.peopleIndex, this.personCount);
+      // socialise(person, index, this.config, this.people);
+      // haveSex(person, this.config, this.dayCount);
+      // progressPregnancy(
+      //   person,
+      //   this.config,
+      //   this.personCount,
+      //   this.activities,
+      //   this.health,
+      //   this.tribeLand,
+      //   this.peopleIndex,
+      //   this.dayCount,
+      //   this.people
+      // );
 
       index += 1;
     }
+
+    indexLocalPeople(this.pepole, this.config, this.localIndex, this.peopleIndex, this.tribeLand);
+
+    spawn(
+      this.personCount,
+      this.config,
+      this.activities,
+      this.health,
+      this.tribeLand,
+      this.peopleIndex,
+      this.dayCount,
+      this.people
+    );
 
     this.tribeLand.growFood();
 
@@ -155,7 +178,10 @@ export default class People extends Component {
         this.people,
         this.state.showPersonDetails,
         this.state.showChild,
-        this.config.pubertyAge
+        this.config.pubertyAge,
+        this.localIndex,
+        this.state.landSelectedX,
+        this.state.landSelectedY
       );
     }
 
@@ -174,7 +200,11 @@ export default class People extends Component {
 
   tickTock() {
     setTimeout(() => {
-      this.oneDay();
+      if (!this.state.pause) {
+        this.oneDay();
+      } else {
+        this.tickTock();
+      }
     }, this.state.clockSpeed);
   }
 
@@ -199,6 +229,17 @@ export default class People extends Component {
 
   setFrameRedrawRate(rate) {
     this.setState({msPerFrameDrawn: rate});
+  }
+
+  setPause() {
+    this.setState({pause: !this.state.pause});
+  }
+
+  setLandSelected(x, y) {
+    this.setState({
+      landSelectedX: x,
+      landSelectedY: y,
+    });
   }
 
   render() {
@@ -273,11 +314,20 @@ export default class People extends Component {
           className="land"
           width={this.tribeLand.getLandWidth() * this.tribeLand.getLandWidthUnitPixels()}
           height={this.tribeLand.getLandHeight() * this.tribeLand.getLandHeightUnitPixels()}
-          onClick={this.tribeLand.landClicked.bind(this.tribeLand, this.people, this.openDetails.bind(this))}
+          onClick={this.tribeLand.landClicked.bind(
+            this.tribeLand,
+            this.people,
+            this.openDetails.bind(this),
+            this.setLandSelected.bind(this)
+          )}
           />
         <h4>People</h4>
         <div>
           Set Clock Speed:&nbsp;
+          <button
+            onClick={this.setPause.bind(this)} >
+            Pause
+          </button>
           <button
             onClick={this.setClockSpeed.bind(this, 1000)} >
             1000

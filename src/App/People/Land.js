@@ -74,7 +74,7 @@ export default class Land {
     }
   }
 
-  drawLand(people, showPersonDetails, showChild, pubertyAge) { // this.state.showPersonDetails.id
+  drawLand(people, showPersonDetails, showChild, pubertyAge, localIndex, selectedLandX, selectedLandY) {
     this.landContext.fillStyle = 'rgb(200, 200, 0)';
     this.landContext.fillRect(
       0,
@@ -92,6 +92,11 @@ export default class Land {
         if (green > 255) green  = 255;
         this.landContext.fillStyle =  `rgb(0, ${green}, 0)`;
         this.landContext.fillRect(startX, startY, endX, endY);
+
+        if (x === selectedLandX && y === selectedLandY) {
+          this.landContext.fillStyle =  `rgb(150, ${green}, 150)`;
+          this.landContext.fillRect(startX, startY, endX, endY);
+        }
       }
     }
 
@@ -114,16 +119,23 @@ export default class Land {
       if (showChild.id === person.id) {
         this.landContext.fillStyle = 'rgb(255, 255, 0)';
       }
+      if (selectedLandX !== null
+        && selectedLandY !== null
+        && localIndex[selectedLandX][selectedLandY].includes(person.id)
+      ) {
+        this.landContext.fillStyle = 'rgb(255, 255, 255)';
+      }
       this.landContext.arc(x, y, this.personRadius, 0, 2 * Math.PI, false);
       this.landContext.fill();
       this.landContext.closePath();
     });
   }
 
-  landClicked(people, openDetails, event) {
+  landClicked(people, openDetails, setLandSelected, event) {
     const rect = this.landCanvas.getBoundingClientRect();
     const clickX = parseInt(event.clientX - rect.left, 10);
     const clickY = parseInt(event.clientY - rect.top, 10);
+    let foundPerson = false;
     people.forEach((person) => {
       const personX = person.position.x * this.landWidthUnitPixels;
       const personY = person.position.y * this.landHeightUnitPixels;
@@ -142,11 +154,17 @@ export default class Land {
         const inPerson = this.landContext.isPointInPath(clickX, clickY);
         this.landContext.closePath();
         if (inPerson) {
+          foundPerson = true;
           openDetails(person);
         }
       }
     });
-
+    if (!foundPerson) {
+      setLandSelected(
+        Math.floor(clickX / this.landWidthUnitPixels),
+        Math.floor(clickY / this.landHeightUnitPixels),
+      );
+    }
   }
 
 };

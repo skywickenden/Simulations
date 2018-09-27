@@ -10,8 +10,8 @@ export default function createPerson(personCount, config, activities, health,
   const ageGuassian = gaussian(30, 5, 15, 50);
   // const fertilityGuassian = gaussian(0.2, 0.04, 0, 1);
   const person = {
-    name: 'person ' + personCount,
-    id: personCount,
+    name: 'person ' + personCount.count,
+    id: personCount.count,
     food: 10,
     enoughFoodForaged: true,
     energy: 100,
@@ -41,7 +41,7 @@ export default function createPerson(personCount, config, activities, health,
     },
   };
   peopleIndex[Math.floor(person.position.x)][Math.floor(person.position.y)].push(person.id);
-  personCount += 1;
+  personCount.count += 1;
   isFertile(person, config, dayCount);
   return person;
 };

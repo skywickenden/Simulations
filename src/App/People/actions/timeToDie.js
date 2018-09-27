@@ -1,6 +1,6 @@
 import removePositionIndex from './removePositionIndex';
 
-export default function timeToDie(person, personIndex, people, peopleIndex) {
+export default function timeToDie(person, personIndex, people, peopleIndex, personCount) {
   if (person.mate) {
     person.mate.mate = null;
   }
@@ -21,5 +21,6 @@ export default function timeToDie(person, personIndex, people, peopleIndex) {
     });
   }
   removePositionIndex(person, peopleIndex);
+  personCount.count -= 1;
   people.splice(personIndex, 1);
 }

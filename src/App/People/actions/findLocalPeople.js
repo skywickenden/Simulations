@@ -22,7 +22,7 @@ export default function findLocalPeople(person, distance, peopleIndex, tribeLand
       nextY = thisY;
       findPeopleInNextSquare(nextX, nextY, steps + 1);
       nextX = thisX + 1;
-      if (nextX => tribeLand.getLandWidth()) nextX = 0
+      if (nextX >= tribeLand.getLandWidth()) nextX = 0
       nextY = thisY;
       findPeopleInNextSquare(nextX, nextY, steps + 1);
       nextX = thisX;
@@ -31,7 +31,7 @@ export default function findLocalPeople(person, distance, peopleIndex, tribeLand
       findPeopleInNextSquare(nextX, nextY, steps + 1);
       nextX = thisX;
       nextY = thisY + 1;
-      if (nextY => tribeLand.getLandHeight()) nextY = 0;
+      if (nextY >= tribeLand.getLandHeight()) nextY = 0;
       findPeopleInNextSquare(nextX, nextY, steps + 1);
     }
 
