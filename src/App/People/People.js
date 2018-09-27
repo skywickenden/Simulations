@@ -1,15 +1,22 @@
 import React, { Component } from 'react';
 
-import gaussian from './../../libraries/gaussian';
-import random from './../../libraries/random';
-
 import Land from './Land';
+
+import createPerson from './actions/createPerson';
+import findLocalPeople from './actions/findLocalPeople';
+import giveBirth from './actions/giveBirth';
+import haveSex from './actions/haveSex';
+import isBirthday from './actions/isBirthday';
+import isItTimeToDie from './actions/isItTimeToDie';
+import isItTimeToForage from './actions/isItTimeToForage';
+import isItTimeToWalkabout from './actions/isItTimeToWalkabout';
+import progressPregnancy from './actions/progressPregnancy';
+import socialise from './actions/socialise';
 
 import './People.css';
 
 export default class People extends Component {
 
-  tribeLand;
   config = {
     land: {
       landWidth: 20,
@@ -20,12 +27,33 @@ export default class People extends Component {
       personRadius: 5,
       landFoodPerTick: 1,
       maxFoodLand: 20,
-    }
+    },
+    initialPopulation: 100,
+    baseHunger: 500,
+    maxFoodToForagePerPerson: 10,
+    maxFoodCarried: 100,
+    normalWalkSpeed: 0.1,
+    daysInYear: 360,
+    daysInMonth: 30,
+    daysFertile: 5,
+    pubertyAge: 13,
+    menopauseAge: 45,
+    energyFromFood: 200,
+    minParentFood: 40,
+    energyToBreathForADay: 50,
+    minEnergyToHaveSex: 200,
+    energyToHaveSex: 70,
+    energyToForage: 80,
+    pregnancyTime: 270,
+    minEnergyToSocialise: 100,
+    potentialMateBecomesMate: 100,
+    energyToBirth: 200,
+    ageAtDeath: 60,
   };
 
+  tribeLand;
   people  = [];
   personCount = 0;
-  initialPopulation = 100;
   activities = [
     'resting',
     'socialising',
@@ -35,32 +63,11 @@ export default class People extends Component {
     healthy: 1,
     dead: 0,
   };
-  baseHunger = 500;
-  maxFoodToForagePerPerson = 10;
-  maxFoodCarried = 100;
-  normalWalkSpeed = 0.1; // In world units
-  daysInYear = 360;
-  daysInMonth = 30;
-  daysFertile = 5;
-  pubertyAge = 13;
-  menopauseAge = 45;
-  energyFromFood = 200;
-  minParentFood = 40;
-  energyToBreathForADay = 50;
-  minEnergyToHaveSex = 200;
-  energyToHaveSex = 70;
-  energyToForage = 80;
-  pregnancyTime = 270;
-  energyPerSocialEncounter = 10;
-  minEnergyToSocialise = 100;
-  potentialMateBecomesMate = 100;
-  energyToBirth = 200;
-  ageAtDeath = 60;
 
   tribes = [];
 
-  year = 0;
-  day = 0;
+  yearCount = 0;
+  dayCount = 0;
   lastFrameDrawnTimestamp = 0;
   maxLoopsOnPeddleToTheMetal = 10;
   peddleToTheMetalCount = 0;
@@ -85,51 +92,18 @@ export default class People extends Component {
       }
     }
 
-    for (let i = 0; i <= this.initialPopulation; i++) {
-      const person = this.createPerson();
+    for (let i = 0; i <= this.config.initialPopulation; i++) {
+      const person = createPerson(
+        this.personCount,
+        this.config,
+        this.activities,
+        this.health,
+        this.tribeLand,
+        this.peopleIndex,
+        this.dayCount
+      );
       this.people.push(person);
     }
-  }
-
-  createPerson() {
-    const startingGuassian = gaussian(0.5, 0.125, 0.01, 0.99);
-    const ageGuassian = gaussian(30, 5, 15, 50);
-    const fertilityGuassian = gaussian(0.2, 0.04, 0, 1);
-    const person = {
-      name: 'person ' + this.personCount,
-      id: this.personCount,
-      food: 10,
-      enoughFoodForaged: true,
-      energy: 100,
-      age: parseInt(ageGuassian(), 10),
-      birthday: parseInt(random() * this.daysInYear, 10),
-      activity: this.activities[0],
-      health: this.health.healthy,
-      sex: random() > 0.5 ? 'Male' : 'Female',
-      fertilityRate: 0.15, // fertilityGuassian(),
-      personalityType: random(), // closer numbers are more compaitible - rolls over from 1 to 0.
-      pregnant: false,
-      mate: null,
-      relationships: {}, // indexed by person id , contians object {friend:int, potentialMate:int}
-      father: null,
-      mother: null,
-      children: [],
-      position: {
-        x: random() * this.tribeLand.getLandWidth(), // In world units, not pixels
-        y: random() * this.tribeLand.getLandHeight(), // In world units, not pixels
-      },
-      walkDirection: null, // North, East, South, West
-      walkSpeed: 0, // In world units
-      walkStepQuantity: 0,
-      traits: {
-        feelsHunger: 0.5,// startingGuassian(),
-        forageSkill: 0.5, // startingGuassian(),
-      },
-    };
-    this.peopleIndex[parseInt(person.position.x, 10)][parseInt(person.position.y, 10)].push(person.id);
-    this.personCount += 1;
-    this.isFertile(person);
-    return person;
   }
 
   componentDidMount() {
@@ -137,440 +111,42 @@ export default class People extends Component {
     this.tickTock();
   }
 
-  consumeFood(person) {
-    while (person.energy <= this.baseHunger * person.traits.feelsHunger && person.food > 0) {
-      person.food -= 1;
-      person.energy += this.energyFromFood;
-    }
-
-    if (person.energy <= 0) {
-      person.health -= 0.1;
-    }
-  }
-
-  isItTimeToDie(person, index) {
-    if (person.health < -1) {
-      this.timeToDie(person, index);
-    }
-  }
-
-  timeToDie(person, index) {
-    if (person.mate) {
-      person.mate.mate = null;
-    }
-    if (person.children) {
-      person.children.forEach((child) => {
-        if (person.sex === 'Male') child.father = null;
-        if (person.sex === 'Female') child.mother = null;
-      });
-    }
-    if (person.mother) {
-      person.mother.children.forEach((child, index) => {
-        if (person.id === child.id) person.mother.children.splice(index, 1);
-      });
-    }
-    if (person.father) {
-      person.father.children.forEach((child, index) => {
-        if (person.id === child.id) person.father.children.splice(index, 1);
-      });
-    }
-    this.removePositionIndex(person);
-    this.people.splice(index, 1);
-  }
-
-  isItTimeToForage(person) {
-    if (person.age > this.pubertyAge
-      && person.energy > this.energyToForage
-      && person.food < this.maxFoodCarried
-    ) {
-      let foodForaged = parseInt(this.maxFoodToForagePerPerson * person.traits.forageSkill, 10);
-      const landX = parseInt(person.position.x, 10);
-      const landY = parseInt(person.position.y, 10);
-      if (foodForaged > this.tribeLand.getCellFood(landX, landY)) {
-        foodForaged = this.tribeLand.getCellFood(landX, landY);
-        person.enoughFoodForaged = false;
-      } else {
-        person.enoughFoodForaged = true;
-      }
-      this.tribeLand.removeFoodFromCell(landX, landY, foodForaged);
-      person.food += foodForaged;
-      person.energy -= this.energyToForage;
-    }
-
-    if (person.age <= this.pubertyAge && person.food < this.maxFoodCarried) {
-      let parentWithMost;
-      if (person.mother) parentWithMost = person.mother;
-      if (person.father) {
-        if (person.mother) {
-          if (person.mother && person.father.food > person.mother.food) {
-            parentWithMost = person.father;
-          }
-        } else {
-          parentWithMost = person.father;
-        }
-      }
-      if (parentWithMost && parentWithMost.food > this.minParentFood) {
-        parentWithMost.food -= 1;
-        person.food += 1;
-      }
-    }
-
-    this.consumeFood(person);
-  }
-
-  isItTimeToWalkabout(person) {
-    if (person.enoughFoodForaged === false
-      && person.walkStepQuantity === 0
-      && person.age > this.pubertyAge
-    ) {
-      const rand = random();
-      const walkDirectionRND = parseInt(rand * 4, 10);
-      switch(walkDirectionRND) {
-        case 0:
-          person.walkDirection = 'North';
-          break;
-        case 1:
-          person.walkDirection = 'West';
-          break;
-        case 2:
-          person.walkDirection = 'South';
-          break;
-        case 3:
-        case 4:
-          person.walkDirection = 'East';
-          break;
-        default:
-          console.error('walkDirectionRND error', walkDirectionRND, rand);
-      }
-      person.walkSpeed = this.normalWalkSpeed;
-      person.walkStepQuantity = 1 / this.normalWalkSpeed; // one world unit.
-      person.children.forEach((child) => {
-        if (child.mother && person && child.mother.id === person.id) {
-          child.walkDirection = person.walkDirection;
-          child.walkSpeed = person.walkSpeed;
-          child.walkStepQuantity = person.walkStepQuantity; // one world unit.
-        }
-      });
-    }
-
-    if (person.walkDirection
-      && person.walkSpeed > 0
-      && person.walkStepQuantity > 0
-      && person.age > this.pubertyAge
-    ) {
-      person.walkStepQuantity -= 1;
-      let xWalkSpeed = 0;
-      let yWalkSpeed = 0;
-      switch(person.walkDirection) {
-        case 'North':
-          yWalkSpeed -= person.walkSpeed;
-          break;
-        case 'West':
-          xWalkSpeed -= person.walkSpeed;
-          break;
-        case 'South':
-          yWalkSpeed += person.walkSpeed;
-          break;
-        case 'East':
-          xWalkSpeed += person.walkSpeed;
-          break;
-        default:
-      }
-      this.removePositionIndex(person);
-      person.position.x += xWalkSpeed;
-      person.position.y += yWalkSpeed;
-      person.children.forEach((child) => {
-        if (child.mother && person && child.mother.id === person.id) {
-          child.position.x += xWalkSpeed;
-          child.position.y += yWalkSpeed;
-        }
-      });
-
-      // loop the persons position on the canvas from left to right and top to bottom.
-      if (person.position.y < 0) person.position.y += this.tribeLand.getLandHeight();
-      if (person.position.y > this.tribeLand.getLandHeight()) {
-        person.position.y -= this.tribeLand.getLandHeight();
-      }
-      if (person.position.x < 0) person.position.x += this.tribeLand.getLandWidth();
-      if (person.position.x > this.tribeLand.getLandWidth()) {
-        person.position.x -= this.tribeLand.getLandWidth();
-      }
-      this.insertPositionIndex(person);
-    }
-  }
-
-  isBirthday(person, index) {
-    if (this.day === person.birthday) {
-      person.age += 1;
-      if (person.age >= this.ageAtDeath) {
-        this.timeToDie(person, index);
-      }
-    }
-  }
-
-  isFertile(person) {
-    if (person.sex === 'Female') {
-      if (person.age > this.pubertyAge && person.age < this.menopauseAge) {
-        const months = parseInt((this.day + person.birthday) / this.daysInMonth, 10);
-        const days = (this.day + person.birthday) - (months * this.daysInMonth);
-        if (days <= this.daysFertile) {
-          person.fertile = true;
-        } else {
-          person.fertile = false;
-        }
-      } else {
-        person.fertile = false;
-      }
-    } else {
-      if (person.age > this.pubertyAge) {
-        person.fertile = true;
-      } else {
-        person.fertile = false;
-      }
-    }
-  }
-
-  haveSex(person) {
-    this.isFertile(person);
-
-    if (person.mate) {
-      if (person.energy > this.minEnergyToHaveSex
-        && person.mate.energy > this.minEnergyToHaveSex
-      ) {
-        person.energy -= this.energyToHaveSex;
-        person.mate.energy -= this.energyToHaveSex;
-        const lowestFertilityRate = person.fertilityRate > person.mate.fertilityRate
-          ? person.mate.fertilityRate : person.fertilityRate;
-        const conception = lowestFertilityRate > random();
-        if (conception) {
-          if (person.mate.sex === 'Male' && person.sex === 'Female' && person.pregnant === false) {
-            person.pregnant = this.pregnancyTime;
-          }
-          if (person.sex === 'Male' && person.mate.sex === 'Female' && person.mate.pregnant === false) {
-            person.mate.pregnant = this.pregnancyTime;
-          }
-        }
-      }
-    }
-  }
-
-  socialiseWithPerson(person, person2) {
-    if (person2.energy > this.minEnergyToSocialise) {
-      if (!person.relationships[person2.id]) {
-
-        const distance1 = Math.abs(person.personalityType - person2.personalityType);
-        let distance2 = 1, distance3 = 1;
-        if (person.personalityType < 0.5 && person2.personalityType > 0.5) {
-          distance2 = Math.abs((person.personalityType + 1) - person2.personalityType);
-        }
-        if (person2.personalityType < 0.5 && person.personalityType > 0.5) {
-          distance3 = Math.abs((person2.personalityType + 1) - person.personalityType);
-        }
-        // negative relationships are dislikes.
-        const relationshipDistance = Math.min(distance1, distance2, distance3) - 0.25;
-        const relationship = {
-          friend: 0,
-          potentialMate: 0,
-          relationshipDistance,
-        };
-         person.relationships[person2.id] = relationship;
-         person2.relationships[person.id] = relationship;
-      }
-
-      const relationship = person.relationships[person2.id];
-
-      if (person.age > this.pubertyAge && person2.age > this.pubertyAge) {
-        if ((person.sex === 'Female' && person2.sex === 'Male')
-          || (person2.sex === 'Female' && person.sex === 'Male')
-        ) {
-          // relationship.potentialMate += parseInt(relationship.relationshipDistance * 10, 10);
-          relationship.potentialMate += relationship.relationshipDistance * 10;
-        }
-      }
-      relationship.friend += parseInt(relationship.relationshipDistance * 10, 10);
-
-
-      if (person.mate === null && person2.mate === null
-        && relationship.potentialMate > this.potentialMateBecomesMate
-      ) {
-        person.mate = person2;
-        person2.mate = person;
-      }
-    }
-  }
-
-  socialise(person, index) {
-    if (person.energy > this.minEnergyToSocialise && person.mate === null && person.age >= this.pubertyAge) {
-      for (let i = index + 1; i < this.people.length - 1; i++) {
-        if (this.people[i].energy <= this.minEnergyToSocialise
-          || this.people[i].mate !== null
-          || this.people[i].age < this.pubertyAge
-        )  {
-          break;
-        }
-        this.socialiseWithPerson(person, this.people[i]);
-      }
-      for (let i = 0; i < index; i++) {
-        if (this.people[i].energy <= this.minEnergyToSocialise
-          || this.people[i].mate !== null
-          || this.people[i].age < this.pubertyAge
-        )  {
-          break;
-        }
-        this.socialiseWithPerson(person, this.people[i]);
-      }
-    }
-  }
-
-  socialiseLocal(person, distance) {
-    const localPeople = this.findLocalPeople(person, distance);
-  }
-
-  findLocalPeople(person, distance) {
-    const localPeople = [];
-    const squaresDone = [];
-
-    const findPeopleInNextSquare = (thisX, thisY, steps) => {
-      if (squaresDone[thisX] && squaresDone[thisX][thisY]) return;
-
-      if (this.peopleIndex[thisX] === undefined || this.peopleIndex[thisX][thisY] === undefined) console.log(person.id, thisX, thisY, person.position.y);
-      this.peopleIndex[thisX][thisY].forEach((personId) => {
-        localPeople.push(personId);
-      });
-
-      if (steps + 1 <= distance) {
-        let nextX;
-        let nextY;
-        nextX = thisX - 1;
-        if (nextX < 0) nextX = this.tribeLand.getLandWidth() - 1;
-        nextY = thisY;
-        findPeopleInNextSquare(nextX, nextY, steps + 1);
-        nextX = thisX + 1;
-        if (nextX => this.tribeLand.getLandWidth()) nextX = 0
-        nextY = thisY;
-        findPeopleInNextSquare(nextX, nextY, steps + 1);
-        nextX = thisX;
-        nextY = thisY - 1;
-        if (nextY < 0) nextY = this.tribeLand.getLandHeight() - 1;
-        findPeopleInNextSquare(nextX, nextY, steps + 1);
-        nextX = thisX;
-        nextY = thisY + 1;
-        if (nextY => this.tribeLand.getLandHeight()) nextY = 0;
-        findPeopleInNextSquare(nextX, nextY, steps + 1);
-      }
-
-      if (!squaresDone[thisX]) {
-        squaresDone[thisX] = [];
-      }
-      if (!squaresDone[thisX][thisY]) {
-        squaresDone[thisX][thisY] = true;
-      }
-      return;
-    }
-    findPeopleInNextSquare(parseInt(person.position.x, 10), parseInt(person.position.y, 10), 1);
-    // if (person.id === 29) console.log(person.id, localPeople);
-  }
-
-  progressPregnancy(person) {
-    if (person.pregnant) {
-      person.pregnant -= 1;
-      if (person.pregnant < 1) {
-        this.giveBirth(person);
-      }
-    }
-  }
-
-  findNewPointFromAngle(x, y, angle, distance) {
-      var result = {};
-      result.x = Math.round(Math.cos(angle * Math.PI / 180) * distance + x);
-      result.y = Math.round(Math.sin(angle * Math.PI / 180) * distance + y);
-
-      return result;
-  }
-
-  giveBirth(person) {
-    person.pregnant = false;
-    person.energy -= this.energyToBirth;
-    const newPerson = this.createPerson(this.people.length - 1);
-
-    const randomAngle = parseInt(random() * 360, 10);
-    const distanceFromMother = (this.tribeLand.getPersonRadius() * 2) + parseInt(random() * 5, 10);
-    const newPoint = this.findNewPointFromAngle(
-      person.position.x * this.tribeLand.getLandWidthUnitPixels(),
-      person.position.y * this.tribeLand.getLandHeightUnitPixels(),
-      randomAngle,
-      distanceFromMother
-    );
-    newPerson.position.x = newPoint.x / this.tribeLand.getLandWidthUnitPixels();
-    newPerson.position.y = newPoint.y / this.tribeLand.getLandHeightUnitPixels();
-    if (newPerson.position.x >= 20) newPerson.position.x = newPerson.position.x - 20;
-    if (newPerson.position.y >= 20) newPerson.position.y = newPerson.position.y - 20;
-    console.log('newPerson.position.x', newPerson.id, newPerson.position.x, newPerson.position.y);
-
-    newPerson.age = 0;
-    newPerson.fertile = false;
-    this.people.push(newPerson);
-
-    person.children.push(newPerson);
-    newPerson.mother = person;
-    if (person.mate) person.mate.children.push(newPerson);
-    newPerson.father = person.mate;
-  }
-
-  removePositionIndex(person) {
-
-    if (parseInt(person.position.x, 10) >= 0 && parseInt(person.position.x, 10) < 20) {
-      if (parseInt(person.position.y, 10) >= 0 && parseInt(person.position.y, 10) < 20) {
-        const indexReference = this.peopleIndex[parseInt(person.position.x, 10)][parseInt(person.position.y, 10)];
-        if (indexReference.indexOf(person.id) > -1) {
-          indexReference.splice(indexReference.indexOf(person.id), 1);
-        }
-      }
-    }
-  }
-
-  insertPositionIndex(person) {
-
-    if (parseInt(person.position.x, 10) >= 0 && parseInt(person.position.x, 10) < 20) {
-      if (parseInt(person.position.y, 10) >= 0 && parseInt(person.position.y, 10) < 20) {
-        const indexReference = this.peopleIndex[parseInt(person.position.x, 10)][parseInt(person.position.y, 10)];
-        indexReference.push(person.id);
-      }
-    }
-  }
-
-  ifStarving(person) {
-    // if ()
-    // @todo use relationships to take food.
-  }
-
   oneDay() {
     let index = 0;
     while (index <= this.people.length - 1) {
       const person = this.people[index];
-      person.energy -= this.energyToBreathForADay;
+      person.energy -= this.config.energyToBreathForADay;
 
-      this.isItTimeToForage(person);
-      this.findLocalPeople(person, 3);
-      this.isItTimeToWalkabout(person);
-      this.ifStarving(person);
-      this.isItTimeToDie(person, index);
+      isItTimeToForage(person, this.config, this.tribeLand);
+      findLocalPeople(person, 3, this.peopleIndex, this.tribeLand);
+      isItTimeToWalkabout(person, this.config, this.peopleIndex, this.tribeLand);
+      isItTimeToDie(person, index, this.people, this.peopleIndex);
 
-      this.isBirthday(person, index);
-      this.socialise(person, index);
-      this.haveSex(person);
-      this.progressPregnancy(person);
+      isBirthday(person, index, this.config, this.dayCount, this.people, this.peopleIndex);
+      socialise(person, index, this.config, this.people);
+      haveSex(person, this.config, this.dayCount);
+      progressPregnancy(
+        person,
+        this.config,
+        this.personCount,
+        this.activities,
+        this.health,
+        this.tribeLand,
+        this.peopleIndex,
+        this.dayCount,
+        this.people
+      );
 
       index += 1;
     }
 
     this.tribeLand.growFood();
 
-    if (this.day === this.daysInYear) {
-      this.year++;
-      this.day = 0;
+    if (this.dayCount === this.config.daysInYear) {
+      this.yearCount++;
+      this.dayCount = 0;
     } else {
-      this.day++;
+      this.dayCount++;
     }
     if (Date.now() - this.state.msPerFrameDrawn > this.lastFrameDrawnTimestamp) {
       this.lastFrameDrawnTimestamp = Date.now();
@@ -579,7 +155,7 @@ export default class People extends Component {
         this.people,
         this.state.showPersonDetails,
         this.state.showChild,
-        this.pubertyAge
+        this.config.pubertyAge
       );
     }
 
@@ -684,8 +260,7 @@ export default class People extends Component {
               ) : ''}
               <ul>
                 {Object.keys(personDetails.relationships).map((relationshipPersonId) => {
-                  const relationship = personDetails.relationships[relationshipPersonId];
-                  // console.log(relationship);
+                  // const relationship = personDetails.relationships[relationshipPersonId];
                   return ('');
                 })}
               </ul>
@@ -750,7 +325,7 @@ export default class People extends Component {
         </div>
 
         <div>
-          Day: {this.day}, Year: {this.year}
+          Day: {this.dayCount}, Year: {this.yearCount}
         </div>
         <div>
           Population: {this.people.length}
