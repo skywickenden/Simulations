@@ -22,8 +22,8 @@ export default class People extends Component {
 
   config = {
     land: {
-      landWidth: 3,
-      landHeight: 3,
+      landWidth: 10,
+      landHeight: 10,
       land: [],
       landWidthUnitPixels: 30,
       landHeightUnitPixels: 30,
@@ -31,7 +31,7 @@ export default class People extends Component {
       landFoodPerTick: 1,
       maxFoodLand: 20,
     },
-    initialPopulation: 10,
+    initialPopulation: 100,
     baseHunger: 500,
     maxFoodToForagePerPerson: 10,
     maxFoodCarried: 100,
@@ -52,9 +52,10 @@ export default class People extends Component {
     potentialMateBecomesMate: 100,
     energyToBirth: 200,
     ageAtDeath: 60,
-    spawnMinimum: 10,
+    spawnMinimum: 300,
     localDistance: 2,
     foodShortage: 10,
+    energyLostWhenLosingFighting: 150,
   };
 
   tribeLand;
@@ -90,6 +91,7 @@ export default class People extends Component {
     msPerFrameDrawn: 100,
     landSelectedX: null,
     landSelectedY: null,
+    landType: 'food', // food, territory
   };
 
   componentWillMount() {
@@ -132,38 +134,38 @@ export default class People extends Component {
         person.energy -= this.config.energyToBreathForADay;
 
         isItTimeToForage(person, this.config, this.tribeLand);
-        // findLocalPeople(person, 3, this.peopleIndex, this.tribeLand);
+        findLocalPeople(person, 3, this.peopleIndex, this.tribeLand);
         isItTimeToWalkabout(person, this.config, this.peopleIndex, this.tribeLand);
         isItTimeToDie(person, index, this.people, this.peopleIndex);
 
         isBirthday(person, index, this.config, this.dayCount, this.people, this.peopleIndex, this.personCount);
-        // socialise(person, index, this.config, this.people);
-        // haveSex(person, this.config, this.dayCount);
-        // progressPregnancy(
-        //   person,
-        //   this.config,
-        //   this.personCount,
-        //   this.activities,
-        //   this.health,
-        //   this.tribeLand,
-        //   this.peopleIndex,
-        //   this.dayCount,
-        //   this.people
-        // );
+        socialise(person, index, this.config, this.people);
+        haveSex(person, this.config, this.dayCount);
+        progressPregnancy(
+          person,
+          this.config,
+          this.personCount,
+          this.activities,
+          this.health,
+          this.tribeLand,
+          this.peopleIndex,
+          this.dayCount,
+          this.people
+        );
 
         index += 1;
       }
 
-      spawn(
-        this.personCount,
-        this.config,
-        this.activities,
-        this.health,
-        this.tribeLand,
-        this.peopleIndex,
-        this.dayCount,
-        this.people
-      );
+      // spawn(
+      //   this.personCount,
+      //   this.config,
+      //   this.activities,
+      //   this.health,
+      //   this.tribeLand,
+      //   this.peopleIndex,
+      //   this.dayCount,
+      //   this.people
+      // );
 
       indexLocalPeople(this.pepole, this.config, this.localIndex, this.peopleIndex, this.tribeLand);
 
@@ -190,7 +192,8 @@ export default class People extends Component {
         this.config.pubertyAge,
         this.localIndex,
         this.state.landSelectedX,
-        this.state.landSelectedY
+        this.state.landSelectedY,
+        this.state.landType
       );
     }
 
@@ -245,6 +248,10 @@ export default class People extends Component {
       landSelectedX: x,
       landSelectedY: y,
     });
+  }
+
+  landTypeChanged(event) {
+    this.setState({landType: event.currentTarget.value})
   }
 
   render() {
@@ -377,6 +384,21 @@ export default class People extends Component {
             onClick={this.setFrameRedrawRate.bind(this, 50)} >
             50ms
           </button>
+        </div>
+
+        <div>
+          Land type shown:
+          <input
+            type="radio" name="landType"
+            value="food"
+            checked={this.state.landType === 'food'}
+            onChange={this.landTypeChanged.bind(this)} /> food
+
+          <input
+            type="radio" name="landType"
+            value="territory"
+            checked={this.state.landType === 'territory'}
+            onChange={this.landTypeChanged.bind(this)} /> territory
         </div>
 
         <div>

@@ -7,6 +7,7 @@ export default class Land {
   landWidthUnitPixels;
   landHeightUnitPixels;
   land = [];
+  landTerritory = [];
   maxFoodLand;
   personRadius;
   maxFoodLand;
@@ -24,8 +25,10 @@ export default class Land {
 
     for (let x = 0; x <= this.landWidth; x++) {
       this.land[x] = [];
+      this.landTerritory[x] = [];
       for (let y = 0; y <= this.landHeight; y++) {
         this.land[x][y] = this.maxFoodLand;
+        this.landTerritory[x][y] = 0.5;
       }
     }
   }
@@ -74,7 +77,13 @@ export default class Land {
     }
   }
 
-  drawLand(people, showPersonDetails, showChild, pubertyAge, localIndex, selectedLandX, selectedLandY) {
+  setTerritory(x, y, teritoryValue) {
+    this.landTerritory[x][y] = teritoryValue;
+  }
+
+  drawLand(people, showPersonDetails, showChild, pubertyAge, localIndex,
+    selectedLandX, selectedLandY, landType
+  ) {
     this.landContext.fillStyle = 'rgb(200, 200, 0)';
     this.landContext.fillRect(
       0,
@@ -88,9 +97,16 @@ export default class Land {
         const endX = this.landWidthUnitPixels - 1;
         const startY = y * this.landHeightUnitPixels + 1;
         const endY = this.landHeightUnitPixels - 1;
-        let green = parseInt(this.land[x][y] / this.maxFoodLand * 255, 10);
-        if (green > 255) green  = 255;
-        this.landContext.fillStyle =  `rgb(0, ${green}, 0)`;
+        let red = 0;
+        let green = 0;
+        let blue = 0;
+        if (landType === 'food') {
+          green = Math.floor(this.land[x][y] / this.maxFoodLand * 255);
+          if (green > 255) green  = 255;
+        } else if (landType === 'territory') {
+          red = Math.floor(this.landTerritory[x][y] * 255);
+        }
+        this.landContext.fillStyle =  `rgb(${red}, ${green}, ${blue})`;
         this.landContext.fillRect(startX, startY, endX, endY);
 
         if (x === selectedLandX && y === selectedLandY) {
@@ -101,8 +117,8 @@ export default class Land {
     }
 
     people.forEach((person) => {
-      const x = parseInt(person.position.x * this.landWidthUnitPixels, 10);
-      const y = parseInt(person.position.y * this.landHeightUnitPixels, 10);
+      const x = Math.floor(person.position.x * this.landWidthUnitPixels);
+      const y = Math.floor(person.position.y * this.landHeightUnitPixels);
 
       this.landContext.beginPath();
       // this.landContext.strokeStyle = 'rgb(0, 0, 155)';
@@ -133,8 +149,8 @@ export default class Land {
 
   landClicked(people, openDetails, setLandSelected, event) {
     const rect = this.landCanvas.getBoundingClientRect();
-    const clickX = parseInt(event.clientX - rect.left, 10);
-    const clickY = parseInt(event.clientY - rect.top, 10);
+    const clickX = Math.floor(event.clientX - rect.left);
+    const clickY = Math.floor(event.clientY - rect.top);
     let foundPerson = false;
     people.forEach((person) => {
       const personX = person.position.x * this.landWidthUnitPixels;
